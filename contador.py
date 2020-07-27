@@ -6,6 +6,7 @@ import os
 import time
 from collections import defaultdict
 from typing import Dict, List, Tuple
+import logging
 
 import bs4  # type: ignore
 from fake_useragent import UserAgent  # type: ignore
@@ -19,6 +20,24 @@ from selenium.webdriver import Firefox, FirefoxProfile
 
 HEADLESS = False
 TIMEOUT = 15
+
+
+#########################
+# loggers
+#########################
+def info_logger():
+    """Info logging."""
+    info_log = logging.getLogger(__name__)
+    info_log.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    logger_formatter = logging.Formatter("[%(levelname)s] - %(message)s")
+    handler.setFormatter(logger_formatter)
+    info_log.addHandler(handler)
+    return info_log
+
+
+info_log = info_logger()
+
 
 #########################
 # Helper functions
@@ -74,10 +93,10 @@ def _read_succeed(driver):
             # Checks if there was a error
             error = driver.find_element_by_css_selector("[title='ENTENDIDO']")
             error.click()
-            print("Solicitud fallada [Error Popup]")
+            info_log.error("Solicitud fallada [Error Popup]")
         except NoSuchElementException:
             # Probably is still present the spinner gif we run it again
-            print("Todavía procesando")
+            info_log.info("Todavía procesando")
     return status
 
 
@@ -124,12 +143,12 @@ def browser_setup():
     opts.headless = cfg["headless"]
     driver = Firefox(options=opts)
     driver.implicitly_wait(cfg["timeout"])
-    return driver
+    return driverx
 
 
 def login(driver, user=None, password=None):
     """Deal with user login."""
-    print("-- Inserindo los datos")
+    info_log.info("Inserindo los datos")
     if not all([user, password]):
         user = input("Usuario: ")
         password = input("Contraseña: ")
@@ -139,7 +158,7 @@ def login(driver, user=None, password=None):
     password_in.send_keys(password)
     submit = driver.find_element_by_css_selector(".slds-button_brand")
     submit.click()
-    print("Logged in")
+    info_log.info("Usuari@ logged")
 
 
 def contador_online(driver):
@@ -148,7 +167,7 @@ def contador_online(driver):
         "div.slds-col:nth-child(8) > div:nth-child(1) > div:nth-child(1)"
     )
     btn.click()
-    print("Contador Online")
+    info_log.info("Area Contador Online")
     driver.find_element_by_name("ActionReconectar").click()
 
 
@@ -188,25 +207,22 @@ def lectura(driver, retry=True):
     If it fails, it will automatically retry one try.
     TODO: Add a reschedule if it fails twice
     """
-    print("Solicitando los valores de lectura ...")
+    info_log.info("Solicitando los valores de lectura ...")
     _wait_to_be_clickable(driver, "[title='Consultar Contador']")
     spinner = driver.find_element_by_class_name("slds-spinner_container")
-    count = 0
     while spinner.is_displayed():
-        count += 1
         time.sleep(1)
         if _read_succeed(driver):
-            print("Solicitud de aceptada")
+            info_log.info("Solicitud de aceptada")
             status = True
             break
         else:
-            print("Solicitud fallada")
+            info_log.error("Solicitud fallada")
             if retry:
-                print("Reintentando ...")
+                info_log.info("Reintentando ...")
                 lectura(driver, False)
             status = False
             break
-        print(count)
     return status
 
 
@@ -225,7 +241,6 @@ def _get_reading(user: dict):
     lectura(driver)
     succeed, values = get_actual_consume(username, driver.page_source, driver)
     driver.close()
-    print(f"Elapsed total time {time.perf_counter() - start}")
     print("#" * 20)
     return succeed, values
 
@@ -243,35 +258,18 @@ def save_results(succeed, data):
 def read():
     """Single thread script entrypoint."""
     users = storage("users")
-    total_running = time.perf_counter()
-    results = []
-    failed = []
-    for user in users["users"]:
+    for user in users["usuarios"]:
         succeed, values = _get_reading(user)
         save_results(succeed, values)
-
-    print(f"Succeed: {results}")
-    print(f"Failed: {failed}")
-    print(f"Total running time {time.perf_counter() - total_running}")
 
 
 def read_multiple(pool):
     """Threadpool script entrypoint."""
-    users = storage("users")["users"]
-    total_running = time.perf_counter()
-    records = pool.map(_get_reading, users)
-    results = []
-    failed = []
-    for rec in records:
-        succeed, values = rec
+    users = storage("users")["usuarios"]
+    results = pool.map(_get_reading, users)
+    for res in results:
+        succeed, values = res
         save_results(succeed, values)
-    print(f"Succeed: {results}")
-    print(f"Failed: {failed}")
-    # TODO:
-    # retry failed ones
-    # improve logging and use the same on for multiple or single
-    # add global in memory save for results succeed and failed
-    print(f"Total running time {time.perf_counter() - total_running}")
 
 
 if __name__ == "__main__":
