@@ -11,8 +11,9 @@ import contador
 def run_safe(fn):
     """Deal with unexpected errors or miss behaves.
 
-    There are still some edge cases here may occur some error and to avoid complete
-    crashes, we gracefully deal we them here
+    There are still some edge cases where may occur some error and to avoid complete
+    crashes, we log them here to fix later.
+    TODO: Add error logs
     """
 
     def _inner(*args):

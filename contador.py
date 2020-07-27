@@ -74,10 +74,10 @@ def _read_succeed(driver):
             # Checks if there was a error
             error = driver.find_element_by_css_selector("[title='ENTENDIDO']")
             error.click()
-            print("Request failed [Error Popup]")
+            print("Solicitud fallada [Error Popup]")
         except NoSuchElementException:
             # Probably is still present the spinner gif we run it again
-            print("Still spinner")
+            print("Todavía procesando")
     return status
 
 
@@ -188,7 +188,7 @@ def lectura(driver, retry=True):
     If it fails, it will automatically retry one try.
     TODO: Add a reschedule if it fails twice
     """
-    print("Requesting reading values ...")
+    print("Solicitando los valores de lectura ...")
     _wait_to_be_clickable(driver, "[title='Consultar Contador']")
     spinner = driver.find_element_by_class_name("slds-spinner_container")
     count = 0
@@ -196,13 +196,13 @@ def lectura(driver, retry=True):
         count += 1
         time.sleep(1)
         if _read_succeed(driver):
-            print("Request Succeed")
+            print("Solicitud de aceptada")
             status = True
             break
         else:
-            print("Reading failed")
+            print("Solicitud fallada")
             if retry:
-                print("Retrying ...")
+                print("Reintentando ...")
                 lectura(driver, False)
             status = False
             break
@@ -253,7 +253,6 @@ def read():
     print(f"Succeed: {results}")
     print(f"Failed: {failed}")
     print(f"Total running time {time.perf_counter() - total_running}")
-
 
 
 def read_multiple(pool):
