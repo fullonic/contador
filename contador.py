@@ -143,7 +143,7 @@ def browser_setup():
     opts.headless = cfg["headless"]
     driver = Firefox(options=opts)
     driver.implicitly_wait(cfg["timeout"])
-    return driverx
+    return driver
 
 
 def login(driver, user=None, password=None):
