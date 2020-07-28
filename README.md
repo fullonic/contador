@@ -62,3 +62,18 @@ Para cambiar el intervalo de tiempo entre una consulta y otra, abrimos el archiv
 En el campo `"script": {"frecuencia [minutos]": 3` podemos ajustar la frecuencia de las consultas.
 
 Por defecto, la automatizacion del browser es oculta, pero alterando el valor `"headless": true` para `false`, esto hara que el processo sea visible.
+
+#### Resultados
+Los resultados seran guardados en el archivo `results.json` en el formato:
+```json
+{"DNI": [
+  ["27-07-2020_19:30:33", 0.14, 4.24, 3.3], 
+  ["27-07-2020_19:35:28", 0.12, 3.64, 3.3]
+  ]}
+ ```
+ Cada secuencia `["27-07-2020_19:30:33", 0.14, 4.24, 3.3]` repesenta una consulta donde los valores son lo seguientes:
+ 
+ 1. Data
+ 2. Consumo instantáneo (kW)
+ 3. Porcentaje (%)
+ 4. Potencia contratada (kW)
