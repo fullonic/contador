@@ -92,7 +92,7 @@ def browser_setup():
     profile.set_preference("general.useragent.override", user_agent.random)
     opts = FirefoxOptions()
     opts.headless = cfg["headless"]
-    driver = Firefox(options=opts)
+    driver = Firefox(executable_path=cfg["gecko_driver"], options=opts)
     driver.implicitly_wait(cfg["timeout"])
     return driver
 
@@ -118,7 +118,6 @@ def save_results(results):
 #########################
 # Data collector
 #########################
-
 
 
 

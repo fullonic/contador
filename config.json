@@ -1,8 +1,9 @@
 {
   "browser": {
-    "headless": false,
+    "headless": true,
     "timeout": 30,
-    "native_events_enabled": false
+    "native_events_enabled": false,
+    "gecko_driver": "/usr/local/bin/geckodriver"
   },
   "script": {"frecuencia [minutos]": 3 }
 }
