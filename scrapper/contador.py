@@ -258,7 +258,7 @@ def save_results(results):
             # TODO: Add trace of failed readings
             # failed.append(data)
             pass
-    with open("results.json", "w") as f:
+    with open(f"{base_path}/results.json", "w") as f:
         json.dump(updated, f)
 
 
