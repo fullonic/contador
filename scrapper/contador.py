@@ -4,6 +4,7 @@ import datetime
 import json
 import os
 import time
+from pathlib import Path
 from collections import defaultdict
 from typing import Dict, List, Tuple
 import logging
@@ -15,8 +16,9 @@ from selenium.common.exceptions import (  # type: ignore
     ElementClickInterceptedException,
     NoSuchElementException,
 )
-from selenium.webdriver import FirefoxOptions  # type: ignore
-from selenium.webdriver import Firefox, FirefoxProfile
+from selenium.webdriver import Firefox, FirefoxProfile, FirefoxOptions  # type: ignore
+from selenium.webdriver import Chrome, ChromeOptions  # type: ignore
+
 
 HEADLESS = False
 TIMEOUT = 15
@@ -103,16 +105,19 @@ def _read_succeed(driver):
 #########################
 # JSON Files
 #########################
+base_path = Path(__file__).parent
+
+
 def get_config():
     """Load script configuration file."""
-    with open("config.json") as f:
+    with open(f"{base_path}/config.json") as f:
         return json.load(f)
 
 
 def storage(type_) -> dict:
     """Get users from json file."""
     db = {"users": "users.json", "results": "results.json"}
-    with open(db[type_], "r") as f:
+    with open(f"{base_path}/{db[type_]}", "r") as f:
         data = json.load(f)
     return data
 
@@ -123,7 +128,7 @@ def save(data):
     updated.update(results)
     for k, v in data.items():
         updated[k].append(v)
-    with open("results.json", "w") as f:
+    with open(f"{base_path}/results.json", "w") as f:
         json.dump(updated, f)
 
 
@@ -132,7 +137,7 @@ def save(data):
 #########################
 
 
-def browser_setup():
+def firefox_browser_setup():
     """Set a driver object."""
     cfg = get_config()["browser"]
     profile = FirefoxProfile()
@@ -142,6 +147,18 @@ def browser_setup():
     opts = FirefoxOptions()
     opts.headless = cfg["headless"]
     driver = Firefox(options=opts)
+    driver.implicitly_wait(cfg["timeout"])
+    return driver
+
+
+def chrome_browser_setup():
+    """Set a driver object."""
+    PATH = Path(__file__).parent / "chromedriver"
+    cfg = get_config()["browser"]
+    user_agent = UserAgent()
+    # opts = ChromeOptions()
+    # opts.headless = cfg["headless"]
+    driver = Chrome(executable_path=PATH)
     driver.implicitly_wait(cfg["timeout"])
     return driver
 
@@ -231,7 +248,7 @@ def _get_reading(user: dict):
     username = user["username"]
     password = user["password"]
     # Browser setup
-    driver = browser_setup()
+    driver = chrome_browser_setup()
     driver.get("https://www.edistribucion.com/es/index.html")
     _wait_to_be_clickable(driver, "li.toggleonopen:nth-child(4)")
 

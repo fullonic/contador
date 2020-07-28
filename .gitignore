@@ -3,4 +3,5 @@ __pycache__
 .vscode
 venv
 geckodriver.log
-iberdrola.py
+results.json
+users.json
