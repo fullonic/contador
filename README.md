@@ -1,6 +1,6 @@
 ### Contador: Consulta automatizada al contador online de [edistribucion](https://www.edistribucion.com/es/index.html)
 
-Con este script es posible automatizar la consulta periódica al contador online, ya sea la consulta individual o múltiples contratos.
+Con este script es posible automatizar la consulta periódica al contador online, ya sea la consulta individual o la de múltiples contratos.
 
 #### Herramientas necesarias:
 - python >3.7 (https://www.python.org/downloads/)
@@ -27,8 +27,8 @@ Por ejemplo:
 
 
 ```
-Para añadir mas cuentas, es fácil como repetir lso campos "username" y "password":
-```json 
+Para añadir mas cuentas, es fácil como repetir los campos "username" y "password":
+```json
 {
   "username": "dni2",
   "password": "pass2"
@@ -51,14 +51,32 @@ Resultando en:
 ```
 
 Para activar el script hacemos:
+
 `python auto_run.py`
 
-Caso tengamos varios usuario@s, para acelerar el proceso hacemos:
+Caso tengamos varios usuario@s, para acelerar el proceso es recomendado:
 
-`python auto_run.py multiple`  # Isto hara el script hacer varias consultas en _paralelo_
+`python auto_run.py multiple`
+
+*Isto hara el script hacer varias consultas en _paralelo_
 
 #### Configuraciones
 Para cambiar el intervalo de tiempo entre una consulta y otra, abrimos el archivo `config.json`.
 En el campo `"script": {"frecuencia [minutos]": 3` podemos ajustar la frecuencia de las consultas.
 
-Por defecto, la automatizacion del browser es oculta, pero alterando el valor `"headless": true` para `false`, esto hara que el processo sea visible.
+Por defecto, la automatizacion del browser es oculta, pero alterando el valor del campo `"headless"` de `true` para `false`, esto hara que el processo sea visible. Sin embargo es recomendado que el valor sea `false` para envitar el abrir y cerrar de ventadas.
+
+#### Resultados
+Los resultados seran guardados en el archivo `results.json` en el formato:
+```json
+{"DNI": [
+  ["27-07-2020_19:30:33", 0.14, 4.24, 3.3],
+  ["27-07-2020_19:35:28", 0.12, 3.64, 3.3]
+  ]}
+ ```
+ Cada secuencia `["27-07-2020_19:30:33", 0.14, 4.24, 3.3]` repesenta una consulta donde los valores son lo seguientes:
+
+ 1. Data
+ 2. Consumo instantáneo (kW)
+ 3. Porcentaje (%)
+ 4. Potencia contratada (kW)

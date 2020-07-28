@@ -65,4 +65,3 @@ def multiple(pool):
 #         "minutes": FREQUENCY,
 #         "next_run_time": start,
 #     }
-
