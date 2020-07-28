@@ -1,8 +1,8 @@
 {
   "browser": {
-    "headless": false,
+    "headless": true,
     "timeout": 30,
     "native_events_enabled": false
   },
-  "script": {"frecuencia [minutos]": 3 }
+  "script": {"frecuencia [minutos]": 10 }
 }
