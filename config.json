@@ -1,6 +1,6 @@
 {
   "browser": {
-    "headless": true,
+    "headless": false,
     "timeout": 30,
     "native_events_enabled": false
   },
