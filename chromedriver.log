@@ -1,0 +1,12 @@
+[0.000][INFO]:      ChromeDriver 30.0.1580.0 /home/somnium/Desktop/CODE/Projects/CV/contador/scrapper/test_chromedriver
+[0.977][FINE]:      Initializing session with capabilities {
+   "browserName": "chrome",
+   "goog:chromeOptions": {
+      "args": [  ],
+      "binary": "/snap/chromium/1240/usr/lib/chromium-browser/chrome",
+      "extensions": [  ]
+   },
+   "platform": "ANY",
+   "version": ""
+}
+

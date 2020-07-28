@@ -153,12 +153,14 @@ def firefox_browser_setup():
 
 def chrome_browser_setup():
     """Set a driver object."""
-    PATH = Path(__file__).parent / "chromedriver"
+    PATH = str(Path(__file__).parent / "chromedriver")
     cfg = get_config()["browser"]
     user_agent = UserAgent()
-    # opts = ChromeOptions()
+    opts = ChromeOptions()
+    # breakpoint()
+    # opts.binary_location = "/snap/chromium/1240/usr/lib/chromium-browser/chrome"
     # opts.headless = cfg["headless"]
-    driver = Chrome(executable_path=PATH)
+    driver = Chrome(executable_path=PATH, options=opts)
     driver.implicitly_wait(cfg["timeout"])
     return driver
 
@@ -169,6 +171,7 @@ def login(driver, user=None, password=None):
     if not all([user, password]):
         user = input("Usuario: ")
         password = input("Contraseña: ")
+    breakpoint()
     user_in = driver.find_element_by_name("username")
     user_in.send_keys(user)
     password_in = driver.find_element_by_name("password")
