@@ -7,7 +7,7 @@ import time
 from collections import defaultdict
 from typing import Dict, List, Tuple
 import logging
-
+from dataclasses import dataclass
 import bs4  # type: ignore
 from fake_useragent import UserAgent  # type: ignore
 from selenium import webdriver  # type: ignore
@@ -119,7 +119,7 @@ def save_results(results):
 # Data collector
 #########################
 
-from dataclasses import dataclass
+
 
 
 @dataclass
@@ -130,7 +130,7 @@ class ReadConsumption:
 
     def login(self):
         """Deal with user login."""
-        info_log.info("Inserindo los datos")
+        info_log.info(f"[{self.username}] Inserindo los datos")
         if not all([self.username, self.password]):
             self.username = input("Usuario: ")
             self.password = input("Contraseña: ")
@@ -140,7 +140,7 @@ class ReadConsumption:
         password_in.send_keys(self.password)
         submit = self.driver.find_element_by_css_selector(".slds-button_brand")
         submit.click()
-        info_log.info("Usuari@ logged")
+        info_log.info(f"[{self.username}] Usuari@ logged")
 
     def contador_online(self):
         """Navigate into consume area."""
@@ -148,7 +148,7 @@ class ReadConsumption:
             "div.slds-col:nth-child(8) > div:nth-child(1) > div:nth-child(1)"
         )
         btn.click()
-        info_log.info("Area Contador Online")
+        info_log.info(f"[{self.username}] Area Contador Online")
         self.driver.find_element_by_name("ActionReconectar").click()
 
     def get_actual_consume(self, page: str) -> Tuple[bool, Dict[str, tuple]]:
@@ -172,7 +172,7 @@ class ReadConsumption:
                 {self.username: (date, None, None, None)},
             )
 
-    def _wait_to_be_clickable(self, selector):
+    def wait_to_be_clickable(self, selector):
         """Deal with object present on DOM but not be clickable because spinning gif."""
         reties = 0
         while reties < 5:
@@ -198,10 +198,10 @@ class ReadConsumption:
                 # Checks if there was a error
                 error = self.driver.find_element_by_css_selector("[title='ENTENDIDO']")
                 error.click()
-                info_log.error("Solicitud fallada [Error Popup]")
+                info_log.error(f"[{self.username}] Solicitud fallada [Error Popup]")
             except NoSuchElementException:
                 # Probably is still present the spinner gif we run it again
-                info_log.info("Todavía procesando")
+                info_log.info(f"[{self.username}] Todavía procesando")
         return status
 
     def lectura(self, retry=True):
@@ -210,20 +210,20 @@ class ReadConsumption:
         If it fails, it will automatically retry one try.
         TODO: Add a reschedule if it fails twice
         """
-        info_log.info("Solicitando los valores de lectura ...")
-        self._wait_to_be_clickable("[title='Consultar Contador']")
+        info_log.info(f"[{self.username}] Solicitando los valores de lectura ...")
+        self.wait_to_be_clickable("[title='Consultar Contador']")
         spinner = self.driver.find_element_by_class_name("slds-spinner_container")
         while spinner.is_displayed():
             time.sleep(1)
-            if self._read_succeed(self.driver):
-                info_log.info("Solicitud de aceptada")
+            if self._read_succeed():
+                info_log.info(f"[{self.username}] Solicitud de aceptada")
                 status = True
                 break
             else:
-                info_log.error("Solicitud fallada")
+                info_log.error(f"[{self.username}] Solicitud fallada")
                 if retry:
-                    info_log.info("Reintentando ...")
-                    self.lectura(self.driver, False)
+                    info_log.info(f"[{self.username}] Reintentando ...")
+                    self.lectura(False)
                 status = False
                 break
         return status
@@ -231,11 +231,11 @@ class ReadConsumption:
     def get_reading(self):
         """Start reading."""
         self.driver.get("https://www.edistribucion.com/es/index.html")
-        self._wait_to_be_clickable("li.toggleonopen:nth-child(4)")
+        self.wait_to_be_clickable("li.toggleonopen:nth-child(4)")
 
         # log in form
         self.login()
-        self.contador_online
+        self.contador_online()
         self.lectura()
         succeed, values = self.get_actual_consume(self.driver.page_source)
         self.driver.close()
@@ -258,11 +258,17 @@ def read():
     print("#" * 20)
 
 
+def _multiple(user):
+    return ReadConsumption(
+        username=user["username"], password=user["password"], driver=browser_setup(),
+    ).get_reading()
+
+
 def read_multiple(pool):
     """Threadpool script entrypoint."""
     users = storage("users")["usuarios"]
-    # results = pool.map(_get_reading, users)
-    # save_results(results)
+    results = pool.map(_multiple, users)
+    save_results(results)
     print("#" * 20)
 
 
