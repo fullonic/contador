@@ -117,16 +117,6 @@ def storage(type_) -> dict:
     return data
 
 
-def save(data):
-    results: dict = storage("results")
-    updated = defaultdict(list)
-    updated.update(results)
-    for k, v in data.items():
-        updated[k].append(v)
-    with open("results.json", "w") as f:
-        json.dump(updated, f)
-
-
 #########################
 # Data collector
 #########################
@@ -176,6 +166,7 @@ def get_actual_consume(
 ) -> Tuple[bool, Dict[str, tuple]]:
     """Extract values from page source after getting readings values."""
     dt = datetime.datetime.now()
+    date = dt.strftime("%d-%m-%Y_%H:%M:%S")
     try:
         soup = bs4.BeautifulSoup(page, features="html.parser")
         actual_read = _actual_read(soup.select(".description")[0].text)
@@ -183,21 +174,14 @@ def get_actual_consume(
         max_power = _max_power(soup.select(".max > span:nth-child(1)")[0].text)
         return (
             True,
-            {
-                username: (
-                    dt.strftime("%d-%m-%Y_%H:%M:%S"),
-                    actual_read,
-                    percent,
-                    max_power,
-                )
-            },
+            {username: (date, actual_read, percent, max_power,)},
         )
     except IndexError:
         # It means that was not possible to get information from page
         # TODO: reschedule task
         return (
             False,
-            {username: (False, "Failed to get data", dt.strftime("%d-%m-%Y_%H:%M:%S"))},
+            {username: (date, None, None, None)},
         )
 
 
@@ -227,7 +211,6 @@ def lectura(driver, retry=True):
 
 
 def _get_reading(user: dict):
-    start = time.perf_counter()
     username = user["username"]
     password = user["password"]
     # Browser setup
@@ -241,35 +224,40 @@ def _get_reading(user: dict):
     lectura(driver)
     succeed, values = get_actual_consume(username, driver.page_source, driver)
     driver.close()
-    print("#" * 20)
     return succeed, values
 
 
-def save_results(succeed, data):
-    if succeed:
-        save(data)
-
-    else:
-        # TODO: Add retry again
-        pass
-        # failed.append(data)
+def save_results(results):
+    """Save data after reading cycle."""
+    data: dict = storage("results")
+    updated = defaultdict(list)
+    updated.update(data)
+    for res in results:
+        succeed, values = res
+        if succeed:
+            for k, v in values.items():
+                updated[k].append(v)
+        else:
+            # TODO: Add trace of failed readings
+            # failed.append(data)
+            pass
+    with open("results.json", "w") as f:
+        json.dump(updated, f)
 
 
 def read():
     """Single thread script entrypoint."""
-    users = storage("users")
-    for user in users["usuarios"]:
-        succeed, values = _get_reading(user)
-        save_results(succeed, values)
+    users = storage("users")["usuarios"]
+    save_results([_get_reading(user) for user in users])
+    print("#" * 20)
 
 
 def read_multiple(pool):
     """Threadpool script entrypoint."""
     users = storage("users")["usuarios"]
     results = pool.map(_get_reading, users)
-    for res in results:
-        succeed, values = res
-        save_results(succeed, values)
+    save_results(results)
+    print("#" * 20)
 
 
 if __name__ == "__main__":

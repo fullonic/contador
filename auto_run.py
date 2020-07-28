@@ -5,7 +5,7 @@ import logging
 import sys
 import traceback
 from multiprocessing.pool import ThreadPool
-from threading import Thread
+import multiprocessing
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -74,7 +74,9 @@ if __name__ == "__main__":
     try:
         mode = sys.argv[1]
         if mode == "multiple":
-            pool = ThreadPool(4)
+            works = multiprocessing.cpu_count()
+            print("works", works)
+            pool = ThreadPool(works)
             scheduler.add_job(
                 **scheduler_config(run_multiple, (pool,), datetime.datetime.now())
             )
