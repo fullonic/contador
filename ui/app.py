@@ -7,11 +7,13 @@ from apscheduler.schedulers import (
 )
 from flask import Flask, render_template, url_for, redirect
 from multiprocessing.pool import ThreadPool
-
+from flask_sqlalchemy import SQLAlchemy  # type: ignore
 from scrapper import run
 
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+db = SQLAlchemy(app)
 
 scheduler = BackgroundScheduler()
 
@@ -56,5 +58,8 @@ def stop_read():
     return redirect(url_for("home"))
 
 
+from ui.models import User, Read  # noqa
+
+db.create_all()
 if __name__ == "__main__":
     app.run(debug=True)
