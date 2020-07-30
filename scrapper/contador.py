@@ -126,6 +126,7 @@ class ReadConsumption:
     username: str = None
     password: str = None
     driver: webdriver = None
+    # cfg: dict = get_config() TODO: Add config info to obj
 
     def login(self):
         """Deal with user login."""
@@ -173,26 +174,27 @@ class ReadConsumption:
 
     def wait_to_be_clickable(self, selector):
         """Deal with object present on DOM but not be clickable because spinning gif."""
-        reties = 0
-        while reties < 5:
+        retries = 0
+        while retries < 5:
             try:
                 btn = self.driver.find_element_by_css_selector(selector)
                 btn.click()
                 break
             except ElementClickInterceptedException:
                 time.sleep(0.5)
-                reties += 1
+                retries += 1
         return
 
     def _read_succeed(self):
         """Ensure that "consulta contador" succeed."""
         status = False
+        self.driver.implicitly_wait(3)
+
         try:
             self.driver.find_element_by_css_selector(".percent")
             status = True  # Succeed
         except NoSuchElementException:
-            # means that error is consumption value is yet not visible
-            # checks if there is a error
+            # means that consumption value isn't visible
             try:
                 # Checks if there was a error
                 error = self.driver.find_element_by_css_selector("[title='ENTENDIDO']")
@@ -200,7 +202,10 @@ class ReadConsumption:
                 info_log.error(f"[{self.username}] Solicitud fallada [Error Popup]")
             except NoSuchElementException:
                 # Probably is still present the spinner gif we run it again
-                info_log.info(f"[{self.username}] Todavía procesando")
+                info_log.info(
+                    f"\x1b[80D\x1b[1A\x1b[K[{self.username}] Todavía procesando"
+                )
+                self._read_succeed()
         return status
 
     def lectura(self, retry=True):
@@ -211,27 +216,27 @@ class ReadConsumption:
         """
         info_log.info(f"[{self.username}] Solicitando los valores de lectura ...")
         self.wait_to_be_clickable("[title='Consultar Contador']")
-        spinner = self.driver.find_element_by_class_name("slds-spinner_container")
-        while spinner.is_displayed():
-            time.sleep(1)
+        while True:
+            # time.sleep(1)
             if self._read_succeed():
                 info_log.info(f"[{self.username}] Solicitud de aceptada")
                 status = True
                 break
             else:
-                info_log.error(f"[{self.username}] Solicitud fallada")
+                # info_log.error(f"[{self.username}] Solicitud fallada")
                 if retry:
                     info_log.info(f"[{self.username}] Reintentando ...")
-                    self.lectura(False)
+                    self.lectura(retry=False)
                 status = False
                 break
+        # self.driver.implicitly_wait(30)  # TODO: Get it from cfg info
         return status
 
     def get_reading(self):
         """Start reading."""
-        self.driver.get("https://www.edistribucion.com/es/index.html")
-        self.wait_to_be_clickable("li.toggleonopen:nth-child(4)")
-
+        self.driver.get(
+            "https://zonaprivada.edistribucion.com/areaprivada/s/login/?language=es"
+        )
         # log in form
         self.login()
         self.contador_online()
