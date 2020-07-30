@@ -3,5 +3,4 @@ __pycache__
 .vscode
 venv
 geckodriver.log
-results.json
-users.json
+error.log
