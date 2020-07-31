@@ -31,7 +31,7 @@ if __name__ == "__main__":
             workers = multiprocessing.cpu_count()
             pool = ThreadPool(workers)
             scheduler.add_job(
-                **scheduler_config(run.multiple, (pool,), datetime.datetime.now())
+                **scheduler_config(run.multiple, (pool, True), datetime.datetime.now())
             )
 
             scheduler.start()

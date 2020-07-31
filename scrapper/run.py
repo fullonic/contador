@@ -35,7 +35,7 @@ def run_safe(fn):
         READS += 1
         try:
             contador.info_log.info(f"Lectura {READS}, {datetime.datetime.now()}")
-            fn(*args)
+            return fn(*args)  # TODO: Confirm
         except Exception as e:
             tb = traceback.format_exception(*sys.exc_info())
             error_log.error(tb)
@@ -52,16 +52,6 @@ def single():
 
 
 @run_safe
-def multiple(pool):
+def multiple(pool, save: bool):
     """Run script inside a thread pool."""
-    return contador.read_multiple(pool)
-
-
-# def scheduler_config(fn, args, start):
-#     return {
-#         "func": fn,
-#         "args": args,
-#         "trigger": "interval",
-#         "minutes": FREQUENCY,
-#         "next_run_time": start,
-#     }
+    return contador.read_multiple(pool, save)

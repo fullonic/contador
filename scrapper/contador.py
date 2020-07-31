@@ -268,12 +268,21 @@ def _multiple(user):
     ).get_reading()
 
 
-def read_multiple(pool):
+def read_multiple(pool, save=True):
     """Threadpool script entrypoint."""
     users = storage("users")["usuarios"]
     results = pool.map(_multiple, users)
-    save_results(results)
+    if save:
+        save_results(results)
     print("#" * 20)
+    return results
+
+
+# def ui_read_multiple(pool):
+#     """Threadpool script entrypoint."""
+#     users = storage("users")["usuarios"]
+#     results = pool.map(_multiple, users)
+#     return results
 
 
 if __name__ == "__main__":

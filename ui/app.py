@@ -44,11 +44,20 @@ def start_scheduler():
     scheduler.start()
 
 
+def sched_task(pool, save=False):
+    results = run.multiple(pool, False)
+    print("results", results)
+    # TODO: Add results to database
+
+
 @app.route("/")
 def home():
     return render_template("home.html")
 
 
+#########################
+# Users
+#########################
 @app.route("/add_user", methods=["GET", "POST"])
 def add_user():
     if request.method == "POST":
@@ -60,6 +69,9 @@ def add_user():
     return render_template("add_user.html")
 
 
+#########################
+# Consults controller
+#########################
 @app.route("/read")
 def read():
     """Start the process of readings."""
@@ -67,7 +79,7 @@ def read():
         pool = ThreadPool(4)
         print("Starting a new job")
         scheduler.add_job(
-            **scheduler_config(run.multiple, (pool,), datetime.datetime.now())
+            **scheduler_config(sched_task, (pool,), datetime.datetime.now())
         )
     except ConflictingIdError:
         pass
