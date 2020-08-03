@@ -2,7 +2,7 @@
 
 {% block body %}
 <div class="container">
-    <div class="row mt-5 mb-5 graphic"></div>
+    <div id="graphic" class="row mt-5 mb-5 graphic">HETE</div>
     <div class="row">
         <input class="mb-2" type="text" id="filterList" onkeyup="searchFilter()" placeholder="Procurar DNI/NIE..">
         <table class="table table-striped text-center" id="usersList">
@@ -21,6 +21,7 @@
     </div>
 </div>
 <script>
+    // TODO: Make api call to get users
     let users = {
         "users": [
             {
@@ -148,16 +149,34 @@
     var body = "";
     users["users"].forEach(addRow)
     function addRow(user, index) {
+        var dni = user.dni
         var template = `<tr>
             <th scope="row">${index + 1}</th>
             <td name="user">${user.dni}</td>
             <td>${user.name}</td>
-            <td><a href="#">ver grafico</a> || <a href="#">Editar/ eliminar usuario</a></td>
+            <td><a href="#" name=${user.dni} onClick="getPlot(name)">ver grafico</a> || <a href="#">Editar/ eliminar usuario</a></td>
         </tr>`
         body += template
         document.getElementById("tableBody").innerHTML = body;
         tableBody.innerHTML = body;
 
+
+    }
+
+    function _getPlot(dni) {
+        let url = "http://localhost:5001/get_plot/" + dni;
+        console.log(url);
+        $.get(
+            url,
+            function (data) {
+                return data;
+            }
+        );
+    }
+    function getPlot(dni) {
+        var plot = _getPlot(dni);
+        //document.getElementById("graphic").innerHTML = plot;
+        console.log(dni, plot);
 
     }
 

@@ -14,8 +14,7 @@ from flask import Flask, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
 from scrapper import run
-
-
+from ui.graphs import create_plot
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
@@ -81,9 +80,16 @@ def add_user():
 # API Endpoints
 #########################
 
+
 @app.route("/get_all_users", methods=["GET"])
 def get_all_users():
     return User.json()
+
+
+@app.route("/get_plot/<dni>", methods=["GET"])
+def get_plot(dni):
+    user = User.get_by_dni(dni)
+    return create_plot(dni, user.reads.all())
 
 
 # Activate reading script
@@ -110,7 +116,8 @@ def stop_read():
     return redirect(url_for("home"))
 
 
-db.create_all()
+# db.create_all()
 from ui.models import User  # noqa
+
 if __name__ == "__main__":
     app.run(debug=True)
