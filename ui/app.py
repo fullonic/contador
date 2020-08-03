@@ -10,12 +10,12 @@ from apscheduler.jobstores.base import ConflictingIdError
 
 from multiprocessing.pool import ThreadPool
 
-from flask import Flask, render_template, url_for, redirect, request
+from flask import Flask, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
 from scrapper import run
 
-# from ui.models import crud
+
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
@@ -50,14 +50,22 @@ def sched_task(pool, save=False):
     # TODO: Add results to database
 
 
+#########################
+# Views endpoints
+#########################
+
+
 @app.route("/")
 def home():
+    # TODO: add flash msg to base template
     return render_template("home.html")
 
 
-#########################
-# Users
-#########################
+@app.route("/users_list")
+def users_list():
+    return render_template("users_list.html")
+
+
 @app.route("/add_user", methods=["GET", "POST"])
 def add_user():
     if request.method == "POST":
@@ -70,8 +78,15 @@ def add_user():
 
 
 #########################
-# Consults controller
+# API Endpoints
 #########################
+
+@app.route("/get_all_users", methods=["GET"])
+def get_all_users():
+    return User.json()
+
+
+# Activate reading script
 @app.route("/read")
 def read():
     """Start the process of readings."""
@@ -95,7 +110,7 @@ def stop_read():
     return redirect(url_for("home"))
 
 
-# from ui.models import User, Read, add_user  # noqa
 db.create_all()
+from ui.models import User  # noqa
 if __name__ == "__main__":
     app.run(debug=True)

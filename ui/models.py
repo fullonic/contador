@@ -21,6 +21,14 @@ class User(db.Model):
         """Query a user by it's DNI/NIE."""
         return cls.get_by_dni(dni).reads.all()
 
+    @classmethod
+    def json(cls):
+        """Return user base info as json."""
+        return {
+            "users": [{"dni": user.dni, "name": user.name} for user in cls.query.all()]
+        }
+
+
 
 class Read(db.Model):
     __tablename__ = "reads"
