@@ -37,7 +37,11 @@ def generate_graphic(dni: str, axis: tuple):
         secondary_y=True,
     )
     # plot_div = plot(fig, output_type="div", include_plotlyjs=False)
-    fig.update_layout(autosize=True, margin=dict(l=50, r=50, b=10, t=50, pad=1))
+    fig.update_layout(
+        title=f"Usuario: {dni}",
+        autosize=True,
+        margin=dict(l=50, r=50, b=10, t=50, pad=1),
+    )
     fig.write_html("ui/templates/_user_graph.html", include_plotlyjs="cdn")
     return "_user_graph.html"
 

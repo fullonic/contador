@@ -1,7 +1,40 @@
 {% extends "base.html" %}
 
 {% block body %}
+
+<div id="userData">
     <iframe id="graphic" class="mt-2" src="" frameborder="0" style="display: none;"></iframe>
+    <div class="col">
+        <table class="m5 table table-striped text-center table-bordered" id="statsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th scope="col" class="" colspan="3">Totales</th>
+                    <th scope="col" colspan="3">Punta</th>
+                    <th scope="col-4" colspan="3">Valle</th>
+                    <th scope="col-4" colspan="3">Llana</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                </tr>
+            </thead>
+            <tbody id="tableStatsBody">
+            </tbody>
+        </table>
+    </div>
+</div>
 <div class="container">
     <div class="row mt-5">
         <input class="mb-2" type="text" id="filterList" onkeyup="searchFilter()" placeholder="Procurar DNI/NIE..">
@@ -21,7 +54,38 @@
     </div>
 </div>
 <script>
-    // TODO: Make api call to get users
+    function getHistoricStats(dni) {
+        let url = "http://localhost:5001/historic_stats/" + dni;
+        console.log(url);
+        fetch(url)
+            .then(response => response.json())
+            .then(data => addTableStats(data));
+
+    }
+
+    function addTableStats(data) {
+        tableBody = document.getElementById("tableStatsBody");
+        var body = `<tr>
+            <td>${data.min}</td>
+            <td>${data.max}</td>
+            <td>${data.average_punta}</td>
+            <td>${data.min_punta}</td>
+            <td>${data.max_punta}</td>
+            <td>${data.average_valle}</td>
+            <td>${data.min_valle}</td>
+            <td>${data.max_valle}</td>
+            <td>${data.average}</td>
+            <td>${data.min_punta}</td>
+            <td>${data.max_punta}</td>
+            <td>${data.average_punta}</td>
+        </tr>`
+        console.log(data)
+        tableBody.innerHTML = body;
+        document.getElementById("statsTable").style.display = "";
+        document.getElementById("spinner-front").classList.add("d-none");
+        document.getElementById("spinner-back").classList.add("d-none");
+    }
+
     fetch('http://localhost:5001/get_all_users')
         .then(response => response.json())
         .then(data => data["users"].forEach(addRow));
@@ -38,12 +102,15 @@
         document.getElementById("tableBody").innerHTML = body;
         tableBody.innerHTML = body;
 
-
     }
 
     function getPlot(dni) {
+        document.getElementById("spinner-front").classList.remove("d-none")
+        document.getElementById("spinner-back").classList.remove("d-none")
+
         let url = "http://localhost:5001/get_plot/" + dni;
         console.log(url);
+        getHistoricStats(dni);
         fetch(url)
             .then(response => response.text())
             .then(data => addPlot(data));

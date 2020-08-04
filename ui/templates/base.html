@@ -6,11 +6,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
         integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}">
+    <!-- <link rel="stylesheet" href="{{url_for('static', filename='css/style.css')}}"> -->
     <title>Contador</title>
+
 </head>
 
 <body>
+    <style>
+        /* [THE LOADING SPINNER] */
+        #spinner-front,
+        #spinner-back {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: all 1s;
+        }
+
+        #spinner-front {
+            z-index: 999;
+            margin-top: 30vh;
+            color: #fff;
+            text-align: center;
+        }
+
+        #spinner-back {
+            z-index: 998;
+            height: 100vh;
+            background: #000;
+            opacity: 0.3;
+        }
+    </style>
+    <!-- Spinner  -->
+    <div id="spinner-front" class="d-none">
+        <img src="static/js/ajax-loader_cubes.gif" /><br>
+        <!-- Generant vista prèvia -->
+    </div>
+    <div id="spinner-back" class="d-none"></div>
     {% block body %}
 
     {% endblock %}
