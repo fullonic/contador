@@ -89,7 +89,13 @@ def get_all_users():
 @app.route("/get_plot/<dni>", methods=["GET"])
 def get_plot(dni):
     user = User.get_by_dni(dni)
-    return create_plot(dni, user.reads.all())
+    plot = create_plot(dni, user.reads.all())
+    return url_for("render_plot", _external=True)
+
+
+@app.route("/render_plot")
+def render_plot():
+    return render_template("_user_graph.html")
 
 
 # Activate reading script

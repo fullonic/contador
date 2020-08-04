@@ -4,6 +4,7 @@ import time
 
 # import plotly.express as px
 from plotly.subplots import make_subplots
+from plotly.offline import plot
 
 
 def generate_graphic_axis(dni: str, data: list):
@@ -18,7 +19,7 @@ def generate_graphic_axis(dni: str, data: list):
 def generate_graphic(dni: str, axis: tuple):
     x, y, y2 = axis
     # Create figure with secondary y-axis
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig: go = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
         go.Scatter(
             x=x, y=y, name=dni, line={"color": "green", "width": 1}, showlegend=True,
@@ -35,12 +36,15 @@ def generate_graphic(dni: str, axis: tuple):
         ),
         secondary_y=True,
     )
-    return fig.to_html()
+    # plot_div = plot(fig, output_type="div", include_plotlyjs=False)
+    fig.update_layout(autosize=True, margin=dict(l=50, r=50, b=10, t=50, pad=1))
+    fig.write_html("ui/templates/_user_graph.html", include_plotlyjs="cdn")
+    return "_user_graph.html"
 
 
 def create_plot(dni: str, data: list):
     start = time.perf_counter()
     dni, axis = generate_graphic_axis(dni, data)
-    plot = generate_graphic(dni, axis)
+    plot_ = generate_graphic(dni, axis)
     print("total", time.perf_counter() - start)
-    return plot
+    return plot_
