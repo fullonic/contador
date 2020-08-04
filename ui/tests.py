@@ -2,7 +2,13 @@ from ui.app import db
 from ui.graphs import generate_graphic_axis, generate_graphic, create_plot
 import datetime
 import pytest
-from ui.models import Read, User
+from ui.models import (
+    Read,
+    User,
+    calculate_max_consumption_peak,
+    calculate_min_consumption_peak,
+    calculate_average_consumption,
+)
 from sqlalchemy import extract, and_, or_
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -117,3 +123,28 @@ def test_query_by_consume_times():
 
     for el in reads:
         assert 0 <= el.date.hour and el.date.hour <= 8
+
+
+def test_punta_stats():
+    punta_consume = Read.get_hora_llana(1)
+    max_ = calculate_max_consumption_peak(punta_consume)
+    min_ = calculate_min_consumption_peak(punta_consume)
+    expected = {
+        "max": "",
+        "min": "",
+        "average": "",
+        "max_punta": "",
+        "min_punta": "",
+        "average_punta": "",
+        "max_valle": "",
+        "min_valle": "",
+        "average_valle": "",
+        "max_llana": "",
+        "min_llana": "",
+        "average_llana": "",
+    }
+    historic_stats = Read.historic_stats(id_=1)
+    assert max_ > 0
+    assert min_ < max_
+    assert isinstance(historic_stats, dict)
+    assert expected.keys() == historic_stats.keys()

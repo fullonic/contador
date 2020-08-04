@@ -93,6 +93,13 @@ def get_plot(dni):
     return url_for("render_plot", _external=True)
 
 
+@app.route("/historic_stats/<dni>", methods=["GET"])
+def historic_stats(dni):
+    user = User.get_by_dni(dni)
+    stats = Read.historic_stats(id_=user.id)
+    return stats
+
+
 @app.route("/render_plot")
 def render_plot():
     return render_template("_user_graph.html")
@@ -123,7 +130,7 @@ def stop_read():
 
 
 # db.create_all()
-from ui.models import User  # noqa
+from ui.models import User, Read  # noqa
 
 if __name__ == "__main__":
     app.run(debug=True)

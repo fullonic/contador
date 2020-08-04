@@ -54,13 +54,26 @@ class Read(db.Model):
         return extract("hour", cls.date)
 
     @classmethod
-    def history_instantaneous_consume(cls, id_, timespan=()):
+    def historic_stats(cls, id_):
         """All gross comsuptions stats."""
-        user_data = Read.query.filter_by(user_id=id_).all()
+        user_data = cls.query.filter_by(user_id=id_).all()
+        punta = cls.get_hora_punta(id_)
+        valle = cls.get_hora_valle(id_)
+        llana = cls.get_hora_llana(id_)
+        # breakpoint()
         return {
             "max": calculate_max_consumption_peak(user_data),
             "min": calculate_min_consumption_peak(user_data),
             "average": calculate_average_consumption(user_data),
+            "max_punta": calculate_max_consumption_peak(punta),
+            "min_punta": calculate_min_consumption_peak(punta),
+            "average_punta": calculate_average_consumption(punta),
+            "max_valle": calculate_max_consumption_peak(valle),
+            "min_valle": calculate_min_consumption_peak(valle),
+            "average_valle": calculate_average_consumption(valle),
+            "max_llana": calculate_max_consumption_peak(llana),
+            "min_llana": calculate_min_consumption_peak(llana),
+            "average_llana": calculate_average_consumption(llana),
         }
 
     @classmethod
