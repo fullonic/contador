@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block body %}
+    <iframe id="graphic" class="mt-2" src="" frameborder="0" style="display: none;"></iframe>
 <div class="container">
-    <div id="graphic" class="row mt-5 mb-5 graphic">HETE</div>
-    <div class="row">
+    <div class="row mt-5">
         <input class="mb-2" type="text" id="filterList" onkeyup="searchFilter()" placeholder="Procurar DNI/NIE..">
         <table class="table table-striped text-center" id="usersList">
             <thead>
@@ -22,132 +22,10 @@
 </div>
 <script>
     // TODO: Make api call to get users
-    let users = {
-        "users": [
-            {
-                "dni": "A5961069L",
-                "name": "Lea"
-            },
-            {
-                "dni": "W3036220K",
-                "name": "Imelda"
-            },
-            {
-                "dni": "U2931952Y",
-                "name": "Humbert"
-            },
-            {
-                "dni": "31004749U",
-                "name": "Jordi"
-            },
-            {
-                "dni": "T9864162Q",
-                "name": "Lea"
-            },
-            {
-                "dni": "Q2213751X",
-                "name": "Lilian"
-            },
-            {
-                "dni": "24788139I",
-                "name": "Honori"
-            },
-            {
-                "dni": "82542443C",
-                "name": "Ildefons"
-            },
-            {
-                "dni": "R8392108O",
-                "name": "Ivette"
-            },
-            {
-                "dni": "Q0516418H",
-                "name": "Huc"
-            },
-            {
-                "dni": "H3992112T",
-                "name": "Lloren\u00e7"
-            },
-            {
-                "dni": "A7902840Z",
-                "name": "Juniper"
-            },
-            {
-                "dni": "I7929725M",
-                "name": "Kaled"
-            },
-            {
-                "dni": "B8591595J",
-                "name": "Job"
-            },
-            {
-                "dni": "94030646S",
-                "name": "Jesus"
-            },
-            {
-                "dni": "06508333M",
-                "name": "Licini"
-            },
-            {
-                "dni": "20600254O",
-                "name": "Jordi"
-            },
-            {
-                "dni": "70452127S",
-                "name": "Isolda"
-            },
-            {
-                "dni": "T6762885G",
-                "name": "Joaquima"
-            },
-            {
-                "dni": "57224511T",
-                "name": "Lea"
-            },
-            {
-                "dni": "T9749450K",
-                "name": "Justinia"
-            },
-            {
-                "dni": "91881786A",
-                "name": "Laura"
-            },
-            {
-                "dni": "88780845V",
-                "name": "Honest"
-            },
-            {
-                "dni": "N9569909P",
-                "name": "Ida"
-            },
-            {
-                "dni": "00890552P",
-                "name": "Llucia"
-            },
-            {
-                "dni": "26352579O",
-                "name": "Jacinta"
-            },
-            {
-                "dni": "52147716N",
-                "name": "Lara"
-            },
-            {
-                "dni": "95474752V",
-                "name": "Jordi"
-            },
-            {
-                "dni": "O0415662F",
-                "name": "Hilari"
-            },
-            {
-                "dni": "33898522U",
-                "name": "Leovigild"
-            }
-        ]
-    }
+    fetch('http://localhost:5001/get_all_users')
+        .then(response => response.json())
+        .then(data => data["users"].forEach(addRow));
     var body = "";
-    users["users"].forEach(addRow)
     function addRow(user, index) {
         var dni = user.dni
         var template = `<tr>
@@ -163,20 +41,22 @@
 
     }
 
-    function _getPlot(dni) {
+    function getPlot(dni) {
         let url = "http://localhost:5001/get_plot/" + dni;
         console.log(url);
-        $.get(
-            url,
-            function (data) {
-                return data;
-            }
-        );
+        fetch(url)
+            .then(response => response.text())
+            .then(data => addPlot(data));
+
     }
-    function getPlot(dni) {
-        var plot = _getPlot(dni);
-        //document.getElementById("graphic").innerHTML = plot;
-        console.log(dni, plot);
+    function addPlot(plot) {
+        console.log(plot);
+        var iframe = document.getElementById("graphic")
+        iframe.src = plot;
+        iframe.style.display = "";
+        iframe.style.width = "100%";
+        iframe.style.height = "75vh";
+        //document.getElementById("graphic").appendChild(plot);
 
     }
 
