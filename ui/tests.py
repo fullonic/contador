@@ -4,7 +4,12 @@ import pytest
 from sqlalchemy import extract, and_, or_
 import itertools
 
-from ui.graphs import generate_graphic_axis, generate_graphic, create_plot
+from ui.graphs import (
+    generate_graphic_axis,
+    generate_graphic,
+    create_plot,
+    create_barchart,
+)
 from ui.app import db
 from ui.models import (
     Read,
@@ -17,6 +22,11 @@ from ui.models import (
 )
 
 
+@pytest.fixture(scope="module")
+def user():
+    return User.query.get(1)
+
+
 def test_get_all_user_as_dict():
     # from ui.models import User
 
@@ -27,7 +37,7 @@ def test_get_all_user_as_dict():
 
 
 def test_generate_graphic_axis():
-    from ui.models import User
+    # from ui.models import User
 
     test_dni = "E8600426D"  # pass by js query
     user = User.get_by_dni(test_dni)
@@ -38,7 +48,7 @@ def test_generate_graphic_axis():
 
 
 def test_generate_graphic():
-    from ui.models import User
+    # from ui.models import User
 
     test_dni = "E8600426D"  # pass by js query
     user = User.get_by_dni(test_dni)
@@ -49,7 +59,7 @@ def test_generate_graphic():
 
 
 def test_create_plot():
-    from ui.models import User
+    # from ui.models import User
 
     test_dni = "E8600426D"  # pass by js query
     user = User.get_by_dni(test_dni)
@@ -72,7 +82,7 @@ def test_filter_query_by_data_range():
     assert len(days) != 0
 
 
-def test_query_by_consume_times():
+def test_query_by_consume_times(user):
     """Filter by difference times of power consumption price.
 
     Tests
@@ -86,7 +96,6 @@ def test_query_by_consume_times():
     hora_llana = ((8, 10), (14, 18), (22, 24))  # noqa
     hora_valle = ((0, 8),)  # noqa
 
-    user = User.query.get(1)
     # hora punta
     reads = Read.query.filter(
         Read.user_id == user.id,
@@ -163,11 +172,8 @@ def test_punta_stats():
     assert expected.keys() == historic_stats.keys()
 
 
-def test_user_total_stats_get_stats():
-    user = User.query.get(1)
+def test_user_total_stats_get_stats(user):
     total_stats = UserTotalStats(user).get_stats()
-    # total_stats = []
-    # breakpoint()
     assert isinstance(total_stats, list)
     assert isinstance(total_stats[0], WeekStats)
     assert total_stats[0].timestamp.year == 2020
@@ -175,11 +181,21 @@ def test_user_total_stats_get_stats():
     assert total_stats[0].max_punta == 5.43
 
 
-def test_user_total_stats_by_week():
-    user = User.query.get(1)
+def test_user_total_stats_by_week(user):
     stats = UserTotalStats(user).stats_by_week()
     assert isinstance(stats, list)
     assert isinstance(stats[0], WeekStats)
     assert isinstance(stats[0].values, itertools._grouper)
     for data in stats[0].values:
         assert isinstance(data, Read)
+
+
+def test_user_total_to_dict(user):
+    stats = UserTotalStats(user).to_dict()
+    assert isinstance(stats, list)
+    assert isinstance(stats[0], dict)
+
+
+def test_create_barchart(user):
+    stats = UserTotalStats(user).to_dict()
+    create_barchart(user.dni, stats)

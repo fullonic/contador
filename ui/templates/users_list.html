@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block body %}
 
 <div id="userData">
@@ -96,7 +95,9 @@
             <th scope="row">${index + 1}</th>
             <td name="user">${user.dni}</td>
             <td>${user.name}</td>
-            <td><a href="#" name=${user.dni} onClick="getPlot(name)">ver grafico</a> || <a href="#">Editar/ eliminar usuario</a></td>
+            <td><a href="#" name=${user.dni} onClick="getPlot(name)">grafico</a>
+                <a href="#" name=${user.dni} onClick="editUser(name)">editar</a>
+            </td>
         </tr>`
         body += template
         document.getElementById("tableBody").innerHTML = body;

@@ -11,8 +11,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import extract, and_, or_
 
 from ui.app import db
-
-
 class User(db.Model):
     """User database model."""
 
@@ -100,18 +98,6 @@ class Read(db.Model):
             }
 
     @classmethod
-    def stats_by_month(cls, id_):
-        """TODO: Stats to be pass into create_plot."""
-
-        def grouper(item):
-            return (item.date.year, item.date.month)
-
-        query = cls.query.filter_by(user_id=id_).all()
-        groups = [
-            ((year, month), data) for ((year, month), data) in groupby(query, grouper)
-        ]
-
-    @classmethod
     def stats_by_week(cls, id_):
         """TODO: Stats to be pass into create_plot."""
 
@@ -196,7 +182,17 @@ class UserTotalStats:
     stats: List[WeekStats] = field(default_factory=list)
 
     def to_dict(self):
-        pass
+        return [
+            {
+                "year": el.timestamp.year,
+                "week": el.timestamp.week,
+                "month": el.timestamp.month,
+                "max_punta": el.max_punta,
+                "max_valle": el.max_valle,
+                "max_llana": el.max_llana,
+            }
+            for el in self.get_stats()
+        ]
 
     def stats_by_week(self) -> List[WeekStats]:
         """TODO: Stats to be pass into create_plot."""
@@ -224,15 +220,15 @@ class UserTotalStats:
         return self.stats
 
     def hora_valle(self, gen):
-        lst = []
-        for el in gen:
+        return [
+            el
+            for el in gen
             if (
                 (el.date.hour >= 0)
                 and (el.date.hour <= 8)
                 and ((el.weekend is True) or (el.weekend is False))
-            ):
-                lst.append(el)
-        return lst
+            )
+        ]
 
     def hora_punta(self, gen):
         lst = []
@@ -249,21 +245,23 @@ class UserTotalStats:
         # breakpoint()
         lst2 = []
         for el in gen:
-            if any(
-                [
-                    (8 < el.date.hour and el.date.hour < 10),
-                    (14 < el.date.hour and el.date.hour < 18),
-                    (22 < el.date.hour and el.date.hour < 24),
-                ]
+            if (
+                any(
+                    [
+                        (8 < el.date.hour and el.date.hour < 10),
+                        (14 < el.date.hour and el.date.hour < 18),
+                        (22 < el.date.hour and el.date.hour < 24),
+                    ]
+                )
+                and el.weekend is False
             ):
-                if not el.weekend:
-                    lst2.append(el)
+                # if not el.weekend:
+                lst2.append(el)
 
         return lst2
 
     def get_stats(self):
-        values = self.stats_by_week()
-        return self.stats
+        return self.stats_by_week()
 
 
 #########################
@@ -283,8 +281,9 @@ def calculate_max_consumption_peak(data: list):
     """Max consumption peak."""
     try:
         return max(row.instantaneous_consume for row in data)
-    except ValueError: # data is empty
+    except ValueError:  # data is empty
         return
+
 
 def calculate_min_consumption_peak(data: list):
     """Min consumption peak."""

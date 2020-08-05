@@ -14,7 +14,8 @@ from flask import Flask, render_template, url_for, redirect, request, jsonify
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
 from scrapper import run
-from ui.graphs import create_plot
+from ui.graphs import create_barchart
+
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
@@ -91,7 +92,7 @@ def get_all_users():
 @app.route("/get_plot/<dni>", methods=["GET"])
 def get_plot(dni):
     user = User.get_by_dni(dni)
-    plot = create_plot(dni, user.reads.all())
+    create_barchart(dni, data=UserTotalStats(user).to_dict())
     return url_for("render_plot", _external=True)
 
 
@@ -132,7 +133,7 @@ def stop_read():
 
 
 # db.create_all()
-from ui.models import User, Read, db_add_user  # noqa
+from ui.models import User, Read, db_add_user, UserTotalStats  # noqa
 
 if __name__ == "__main__":
     app.run(debug=True)
