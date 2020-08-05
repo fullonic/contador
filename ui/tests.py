@@ -1,20 +1,24 @@
-from ui.app import db
-from ui.graphs import generate_graphic_axis, generate_graphic, create_plot
 import datetime
+
 import pytest
+from sqlalchemy import extract, and_, or_
+import itertools
+
+from ui.graphs import generate_graphic_axis, generate_graphic, create_plot
+from ui.app import db
 from ui.models import (
     Read,
     User,
     calculate_max_consumption_peak,
     calculate_min_consumption_peak,
     calculate_average_consumption,
+    UserTotalStats,
+    WeekStats,
 )
-from sqlalchemy import extract, and_, or_
-from sqlalchemy.ext.hybrid import hybrid_property
 
 
 def test_get_all_user_as_dict():
-    from ui.models import User
+    # from ui.models import User
 
     users_list = User.json()
     # assert isinstance(users_list, list)
@@ -157,3 +161,25 @@ def test_punta_stats():
     assert min_ < max_
     assert isinstance(historic_stats, dict)
     assert expected.keys() == historic_stats.keys()
+
+
+def test_user_total_stats_get_stats():
+    user = User.query.get(1)
+    total_stats = UserTotalStats(user).get_stats()
+    # total_stats = []
+    # breakpoint()
+    assert isinstance(total_stats, list)
+    assert isinstance(total_stats[0], WeekStats)
+    assert total_stats[0].timestamp.year == 2020
+    assert total_stats[0].max_valle == 5.49
+    assert total_stats[0].max_punta == 5.43
+
+
+def test_user_total_stats_by_week():
+    user = User.query.get(1)
+    stats = UserTotalStats(user).stats_by_week()
+    assert isinstance(stats, list)
+    assert isinstance(stats[0], WeekStats)
+    assert isinstance(stats[0].values, itertools._grouper)
+    for data in stats[0].values:
+        assert isinstance(data, Read)

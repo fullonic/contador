@@ -3,7 +3,9 @@
 """
 import datetime
 from itertools import groupby
-from typing import List
+from typing import List, NamedTuple, Iterator
+from dataclasses import dataclass, field
+import itertools
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import extract, and_, or_
@@ -108,8 +110,20 @@ class Read(db.Model):
         groups = [
             ((year, month), data) for ((year, month), data) in groupby(query, grouper)
         ]
-        # for ((year, month), items) in groupby(query, grouper):
-        # print(month, year, max(item.instantaneous_consume for item in items))
+
+    @classmethod
+    def stats_by_week(cls, id_):
+        """TODO: Stats to be pass into create_plot."""
+
+        def grouper(item):
+            year, week, _ = item.date.isocalendar()
+            return (year, week, item.date.month)
+
+        query = cls.query.filter_by(user_id=id_).all()
+        groups = [
+            ((year, week, month), data)
+            for ((year, week, month), data) in groupby(query, grouper)
+        ]
 
     @classmethod
     def get_hora_punta(cls, id_: int) -> List[object]:
@@ -155,6 +169,103 @@ class Read(db.Model):
         ).all()
 
 
+class Timestamp(NamedTuple):
+    """Read date time."""
+
+    year: int
+    week: int
+    month: int
+
+
+@dataclass
+class WeekStats:
+    """Weekly reads stats."""
+
+    timestamp: Timestamp
+    values: itertools._grouper
+    max_punta: float = 0.0
+    max_valle: float = 0.0
+    max_llana: float = 0.0
+
+
+@dataclass
+class UserTotalStats:
+    """User historic statistics."""
+
+    user: User
+    stats: List[WeekStats] = field(default_factory=list)
+
+    def to_dict(self):
+        pass
+
+    def stats_by_week(self) -> List[WeekStats]:
+        """TODO: Stats to be pass into create_plot."""
+
+        def grouper(item):
+            year, week, _ = item.date.isocalendar()
+            return Timestamp(year, week, item.date.month)
+
+        data = self.user.reads.all()
+        ts: Timestamp
+        for (ts, values) in groupby(data, grouper):
+            val1, val2, val3 = itertools.tee(values, 3)
+            max_valle = calculate_max_consumption_peak(self.hora_valle(val1))
+            max_punta = calculate_max_consumption_peak(self.hora_punta(val2))
+            max_llana = calculate_max_consumption_peak(self.hora_llana(val3))
+            self.stats.append(
+                WeekStats(
+                    ts,
+                    values=values,
+                    max_valle=max_valle,
+                    max_punta=max_punta,
+                    max_llana=max_llana,
+                )
+            )
+        return self.stats
+
+    def hora_valle(self, gen):
+        lst = []
+        for el in gen:
+            if (
+                (el.date.hour >= 0)
+                and (el.date.hour <= 8)
+                and ((el.weekend is True) or (el.weekend is False))
+            ):
+                lst.append(el)
+        return lst
+
+    def hora_punta(self, gen):
+        lst = []
+        for el in gen:
+            if (
+                (10 <= el.date.hour and el.date.hour <= 14)
+                or (18 <= el.date.hour and el.date.hour <= 22)
+                and el.weekend is False
+            ):
+                lst.append(el)
+        return lst
+
+    def hora_llana(self, gen):
+        # breakpoint()
+        lst2 = []
+        for el in gen:
+            if any(
+                [
+                    (8 < el.date.hour and el.date.hour < 10),
+                    (14 < el.date.hour and el.date.hour < 18),
+                    (22 < el.date.hour and el.date.hour < 24),
+                ]
+            ):
+                if not el.weekend:
+                    lst2.append(el)
+
+        return lst2
+
+    def get_stats(self):
+        values = self.stats_by_week()
+        return self.stats
+
+
 #########################
 # Helper functions
 #########################
@@ -170,8 +281,10 @@ def db_add_user(dni, password, name):
 
 def calculate_max_consumption_peak(data: list):
     """Max consumption peak."""
-    return max(row.instantaneous_consume for row in data)
-
+    try:
+        return max(row.instantaneous_consume for row in data)
+    except ValueError: # data is empty
+        return
 
 def calculate_min_consumption_peak(data: list):
     """Min consumption peak."""
