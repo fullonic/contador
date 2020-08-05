@@ -1,11 +1,14 @@
 """
 
 """
+import datetime
+from itertools import groupby
+from typing import List
 
-from ui.app import db
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import extract, and_, or_
-from typing import List
+
+from ui.app import db
 
 
 class User(db.Model):
@@ -44,6 +47,7 @@ class Read(db.Model):
     percent = db.Column(db.Float())
     max_power = db.Column(db.Float())
     date = db.Column(db.DateTime())
+    weekend = db.Column(db.Boolean(), default=False)
 
     @hybrid_property
     def date_hour(self):
@@ -61,20 +65,51 @@ class Read(db.Model):
         valle = cls.get_hora_valle(id_)
         llana = cls.get_hora_llana(id_)
         # breakpoint()
-        return {
-            "max": calculate_max_consumption_peak(user_data),
-            "min": calculate_min_consumption_peak(user_data),
-            "average": calculate_average_consumption(user_data),
-            "max_punta": calculate_max_consumption_peak(punta),
-            "min_punta": calculate_min_consumption_peak(punta),
-            "average_punta": calculate_average_consumption(punta),
-            "max_valle": calculate_max_consumption_peak(valle),
-            "min_valle": calculate_min_consumption_peak(valle),
-            "average_valle": calculate_average_consumption(valle),
-            "max_llana": calculate_max_consumption_peak(llana),
-            "min_llana": calculate_min_consumption_peak(llana),
-            "average_llana": calculate_average_consumption(llana),
-        }
+        # TODO: Fix ValueError when user don't have records
+        try:
+            return {
+                "max": calculate_max_consumption_peak(user_data),
+                "min": calculate_min_consumption_peak(user_data),
+                "average": calculate_average_consumption(user_data),
+                "max_punta": calculate_max_consumption_peak(punta),
+                "min_punta": calculate_min_consumption_peak(punta),
+                "average_punta": calculate_average_consumption(punta),
+                "max_valle": calculate_max_consumption_peak(valle),
+                "min_valle": calculate_min_consumption_peak(valle),
+                "average_valle": calculate_average_consumption(valle),
+                "max_llana": calculate_max_consumption_peak(llana),
+                "min_llana": calculate_min_consumption_peak(llana),
+                "average_llana": calculate_average_consumption(llana),
+            }
+        except ValueError:  # no data to be calculate max and min
+            return {
+                "max": "",
+                "min": "",
+                "average": "",
+                "max_punta": "",
+                "min_punta": "",
+                "average_punta": "",
+                "max_valle": "",
+                "min_valle": "",
+                "average_valle": "",
+                "max_llana": "",
+                "min_llana": "",
+                "average_llana": "",
+            }
+
+    @classmethod
+    def stats_by_month(cls, id_):
+        """TODO: Stats to be pass into create_plot."""
+
+        def grouper(item):
+            return (item.date.year, item.date.month)
+
+        query = cls.query.filter_by(user_id=id_).all()
+        groups = [
+            ((year, month), data) for ((year, month), data) in groupby(query, grouper)
+        ]
+        # for ((year, month), items) in groupby(query, grouper):
+        # print(month, year, max(item.instantaneous_consume for item in items))
 
     @classmethod
     def get_hora_punta(cls, id_: int) -> List[object]:
@@ -84,6 +119,7 @@ class Read(db.Model):
         """
         return Read.query.filter(
             Read.user_id == id_,
+            Read.weekend == False,  # noqa
             or_(
                 and_(Read.date_hour >= 10, Read.date_hour <= 14),
                 and_(Read.date_hour >= 18, Read.date_hour <= 22),
@@ -98,6 +134,7 @@ class Read(db.Model):
         """
         return Read.query.filter(
             Read.user_id == id_,
+            Read.weekend == False,  # noqa
             or_(
                 and_(Read.date_hour >= 8, Read.date_hour <= 10),
                 and_(Read.date_hour >= 14, Read.date_hour <= 18),
@@ -112,17 +149,19 @@ class Read(db.Model):
         0 - 8
         """
         return Read.query.filter(
-            Read.user_id == id_, and_(Read.date_hour >= 0, Read.date_hour <= 8),
+            Read.user_id == id_,
+            or_(Read.weekend == False, Read.weekend == True),  # noqa
+            and_(Read.date_hour >= 0, Read.date_hour <= 8),
         ).all()
 
 
 #########################
 # Helper functions
 #########################
-def add_user(username, password, name):
+def db_add_user(dni, password, name):
     """Add new user to db."""
     try:
-        new_user = User(dni=username, password=password, name=name)
+        new_user = User(dni=dni, password=password, name=name)
         db.session.add(new_user)
         db.session.commit()
     except Exception as e:
@@ -142,3 +181,10 @@ def calculate_min_consumption_peak(data: list):
 def calculate_average_consumption(data: list):
     """Average consumption."""
     return sum(row.instantaneous_consume for row in data) / len(data)
+
+
+def is_weekend(dt: datetime.datetime):
+    weekend_days = {6, 7}
+    if dt.isoweekday() in weekend_days:
+        return True
+    return False

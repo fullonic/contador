@@ -68,8 +68,10 @@ def users_list():
 @app.route("/add_user", methods=["GET", "POST"])
 def add_user():
     if request.method == "POST":
-        add_user(
-            request.form["username"], request.form["password"], request.form["name"]
+        db_add_user(
+            dni=request.form["username"],
+            password=request.form["password"],
+            name=request.form["name"],
         )
         # TODO: Add flask message
         return redirect(url_for("home"))
@@ -130,7 +132,7 @@ def stop_read():
 
 
 # db.create_all()
-from ui.models import User, Read  # noqa
+from ui.models import User, Read, db_add_user  # noqa
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -150,24 +150,32 @@ def get_percent(consume, max_power):
 
 def get_consume(max_power):
     """Generate instantaneous power consume."""
-    return round(random.randint(0, math.floor(max_power)) + (1.5 * random.random()), 2)
+    return round(random.randint(1, math.floor(max_power)) - random.random(), 2)
 
 
 def date_now():
     return datetime.datetime.now()
 
 
-def create_first_read():
-    users = get_users()
+def is_weekend(dt: datetime.datetime):
+    weekend_days = {6, 7}
+    if dt.isoweekday() in weekend_days:
+        return True
+    return False
+
+
+def create_first_read(users):
     for user in users:
         max_power = get_max_power()
         consume = get_consume(max_power)
         percent = get_percent(consume, max_power)
+        date = date_now()
         read = Read(
             instantaneous_consume=consume,
             percent=percent,
             max_power=max_power,
-            date=date_now(),
+            date=date,
+            weekend=is_weekend(date),
             user=user,
         )
         db.session.add(read)
@@ -183,6 +191,7 @@ def create_fake_reads(days):
     """Generate fake read data for x days."""
     reads = days * 24 * 4  # a read for each 15 min
     users = get_users()
+    create_first_read(users)
     date = get_last_read_time(users[0])
     for _ in range(reads):
         for user in users:
@@ -194,6 +203,7 @@ def create_fake_reads(days):
                 percent=percent,
                 max_power=max_power,
                 date=date,
+                weekend=is_weekend(date),
                 user=user,
             )
             db.session.add(read)
