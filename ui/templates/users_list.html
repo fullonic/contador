@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block body %}
+<style>
+    #backBtn {
+        position: fixed;
+        bottom: 20px;
+        right: 30px;
+        z-index: 99;
+        border: none;
+        width: 50px;
+        height: 50px;
+        outline: none;
+        background-color: #dc3545;
+        color: white;
+        cursor: pointer;
+        padding: 1px;
+        margin: auto;
+        border-radius: 50%;
+        font-size: 25px;
+    }
+
+    #backBtn:hover {
+        background-color: #555;
+        /* Add a dark-grey background on hover */
+    }
+
+    .back {
+        color: white;
+        position: absolute;
+        top: 0;
+        display: block;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        text-align: center;
+        padding-bottom:0px;
+        margin-bottom: 0px;
+        line-height: 45px;
+        font-size: 38px;
+        font-family: 'Roboto';
+        font-weight: 300;
+        animation: plus-out 0.3s;
+        transition: all 0.3s;
+    }
+</style>
+<div id="userData">
+    <iframe id="graphic" class="mt-2" src="" frameborder="0" style="display: none;"></iframe>
+    <div class="col">
+        <table class="m5 table table-striped text-center table-bordered" id="statsTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th scope="col" class="" colspan="3">Totales</th>
+                    <th scope="col" colspan="3">Punta</th>
+                    <th scope="col-4" colspan="3">Valle</th>
+                    <th scope="col-4" colspan="3">Llana</th>
+                </tr>
+            </thead>
+            <thead>
+                <tr>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                    <th>min</th>
+                    <th>max</th>
+                    <th>media</th>
+                </tr>
+            </thead>
+            <tbody id="tableStatsBody">
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="container">
+    <div class="row mt-5">
+        <div class="row">
+            <div class="col-12 mb-3">
+                <input class="d-block form-control" type="text" id="filterList" onkeyup="searchFilter()"
+                    placeholder="Procurar DNI/NIE..">
+            </div>
+        </div>
+        <table class="table table-striped text-center" id="usersList">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">DNI/NIE</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Datos</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<a type="btn btn-danger" id="backBtn" href="{{url_for('home')}}" name="button">
+    <p class="back">
+        < </p>
+</a>
+
+<script>
+    function getHistoricStats(dni) {
+        let url = "http://localhost:5001/historic_stats/" + dni;
+        console.log(url);
+        fetch(url)
+            .then(response => response.json())
+            .then(data => addTableStats(data));
+
+    }
+
+    function addTableStats(data) {
+        tableBody = document.getElementById("tableStatsBody");
+        var body = `<tr>
+            <td>${data.min}</td>
+            <td>${data.max}</td>
+            <td>${data.average_punta}</td>
+            <td>${data.min_punta}</td>
+            <td>${data.max_punta}</td>
+            <td>${data.average_valle}</td>
+            <td>${data.min_valle}</td>
+            <td>${data.max_valle}</td>
+            <td>${data.average}</td>
+            <td>${data.min_punta}</td>
+            <td>${data.max_punta}</td>
+            <td>${data.average_punta}</td>
+        </tr>`
+        console.log(data)
+        tableBody.innerHTML = body;
+        document.getElementById("statsTable").style.display = "";
+        document.getElementById("spinner-front").classList.add("d-none");
+        document.getElementById("spinner-back").classList.add("d-none");
+    }
+
+    fetch('http://localhost:5001/get_all_users')
+        .then(response => response.json())
+        .then(data => data["users"].forEach(addRow));
+    var body = "";
+    function addRow(user, index) {
+        var dni = user.dni
+        var template = `<tr>
+            <th scope="row">${index + 1}</th>
+            <td name="user">${user.dni}</td>
+            <td>${user.name}</td>
+            <td>
+                <a href="#" class="badge badge-info" name=${user.dni} onClick="getPlot(name)">grafico</a>
+                <a href="#" class="badge badge-warning" name=${user.dni} onClick="editUser(name)">editar</a>
+                <a href="#" class="badge badge-success" name=${user.dni} onClick="editUser(name)">exportar</a>
+            </td>
+        </tr>`
+        body += template
+        document.getElementById("tableBody").innerHTML = body;
+        tableBody.innerHTML = body;
+
+    }
+
+    function getPlot(dni) {
+        document.getElementById("spinner-front").classList.remove("d-none")
+        document.getElementById("spinner-back").classList.remove("d-none")
+
+        let url = "http://localhost:5001/get_plot/" + dni;
+        console.log(url);
+        getHistoricStats(dni);
+        fetch(url)
+            .then(response => response.text())
+            .then(data => addPlot(data));
+
+    }
+    function addPlot(plot) {
+        console.log(plot);
+        var iframe = document.getElementById("graphic")
+        iframe.src = plot;
+        iframe.style.display = "";
+        iframe.style.width = "100%";
+        iframe.style.height = "75vh";
+        //document.getElementById("graphic").appendChild(plot);
+
+    }
+
+    function searchFilter() {
+        var input, filter, tableBody, th, td, i, txtValue;
+        input = document.getElementById('filterList');
+        filter = input.value.toUpperCase();
+        tableBody = document.getElementById("tableBody");
+        tr = tableBody.getElementsByTagName("tr");
+
+        for (i = 0; i < tr.length; i++) {
+            td = tr[i].getElementsByTagName("td")[0];
+            if (td) {
+                txtValue = td.textContent || td.innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+
+    }
+</script>
+{% endblock %}

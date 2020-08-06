@@ -1,0 +1,52 @@
+<form action="{{ url_for('settings') }}" method="POST" enctype="multipart/form-data">
+  <!-- Excel Files CONTROL CARD -->
+  <div class="card mt-3">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-md-10">Configuracion</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group col-md">
+          <label for="frecuencia">Frecuencia de consultas [minutos]</label>
+          <input type="number" min="0" value="{{ config.script['frecuencia [minutos]'] }}" name="frecuencia [minutos]"
+            class="form-control" id="frecuencia" placeholder="Frecuencia de consultas [minutos]" required>
+        </div>
+        <div class="form-group col-md">
+          <label for="timeout">Tiempo de espera [segundos]</label>
+          <input type="number" min="0" value="{{ config.browser.timeout }}" name="timeout" class="form-control"
+            id="timeout" placeholder="Tiempo de espera por html elementos" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-check mr-3">
+          <input class="form-check-input" name="headless" type="checkbox" value="yes" id="runHeadless"
+            {% if config.browser.headless %}checked{% endif %}>
+          <label class="form-check-label" for="runHeadless">
+            Headless Mode
+          </label>
+        </div>
+        <div class="form-check mr-3">
+          <input class="form-check-input" name="native_events_enabled" type="checkbox" value="yes" id="native_events_enabled"
+            {% if config.browser.native_events_enabled %}checked{% endif %}>
+          <label class="form-check-label" for="native_events_enabled">
+            Native events
+          </label>
+        </div>
+
+      </div>
+      <div class="form-row mt-2">
+        <div class="form-group col-md-12 d-block">
+          <label for="driver">Localizacion gecko driver</label>
+          <input type="text" value="{{ config.browser.gecko_driver }}" name="gecko_driver" class="form-control"
+            id="driver" placeholder="Gecko driver localizacion" required>
+        </div>
+      </div>
+      <!-- CONFIRM BUTTON -->
+      <div class="row mt-4">
+        <button type="submit" id="submit_config" class="btn btn-success ml-5">Guardar</button>
+      </div>
+    </div>
+  </div>
+</form>
