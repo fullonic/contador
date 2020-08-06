@@ -8,10 +8,15 @@ Con este script es posible automatizar la consulta periódica al contador online
 - geckodriver (https://github.com/mozilla/geckodriver/releases) [ [como instalar](https://www.guru99.com/gecko-marionette-driver-selenium.html) ]
 - contador (este script) (https://github.com/fullonic/contador/archive/master.zip)
 
-#### Como utilizar:
+#### Como utilizar en plataforma tipo Raspberry [recomendado]:
+[Paso a paso en breve]
+
+#### Como utilizar plataforma "Desktop":
 Una vez instalado todo, entramos en la carpeta `contador` y abrimos una ventana de terminal. Y hacemos el siguiente:
+* En algunas plataformas utilizar `python3` en lugar de `python`
 
 `python -m pip install -r requeriments.txt`
+
 
 Cuando haya concluido la instalación de las dependencias, hay que añadir el DNI y la contraseña. Para tal, abrimos el archivo `users.json` y indroducimos nuestros dados.
 Por ejemplo:
