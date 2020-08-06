@@ -20,6 +20,7 @@ from ui.models import (
     UserTotalStats,
     WeekStats,
 )
+from scrapper.contador import singleReadData
 
 
 @pytest.fixture(scope="module")
@@ -199,3 +200,38 @@ def test_user_total_to_dict(user):
 def test_create_barchart(user):
     stats = UserTotalStats(user).to_dict()
     create_barchart(user.dni, stats)
+
+
+def test_add_results_into_db():
+    results = [
+        (
+            False,
+            {
+                "47635719M": singleReadData(
+                    date=datetime.datetime(2020, 8, 6, 19, 44, 47, 702887),
+                    power=None,
+                    percent=None,
+                    max_power=None,
+                )
+            },
+        ),
+        (
+            True,
+            {
+                "47635719M": singleReadData(
+                    date=datetime.datetime(2020, 8, 6, 19, 44, 47, 702887),
+                    power=None,
+                    percent=None,
+                    max_power=None,
+                )
+            },
+        ),
+    ]
+    for res in results:
+        if res[0] is False:
+            continue
+        else:
+            # TODO: Add results to database
+            date, power, percent, max_power = list(res[1].values())[0].to_tuple()
+            print(date, power, percent, max_power)
+            # breakpoint()

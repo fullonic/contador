@@ -166,6 +166,16 @@ class Read(db.Model):
         ).all()
 
 
+@dataclass
+class singleReadData:
+    """TODO: Implement Results to have this format."""
+
+    date: datetime.datetime
+    power: float
+    percent: float
+    max_power: float
+
+
 class Timestamp(NamedTuple):
     """Read date time."""
 

@@ -4,6 +4,7 @@ import datetime
 import json
 import os
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict, List, Tuple
@@ -22,6 +23,23 @@ from selenium.webdriver import Firefox, FirefoxProfile
 HEADLESS = False
 TIMEOUT = 15
 base_path = Path(__file__).parent
+
+
+@dataclass
+class singleReadData:
+    """TODO: Implement Results to have this format."""
+
+    date: datetime.datetime
+    power: float
+    percent: float
+    max_power: float
+
+    def to_tuple(self, format_data: bool = False):
+        date = self.date
+        if format_data:
+            date = date.strftime("%d-%m-%Y_%H:%M:%S")  # type: ignore
+        return (date, self.power, self.percent, self.max_power)
+
 
 #########################
 # loggers
@@ -107,7 +125,7 @@ def save_results(results):
         succeed, values = res
         if succeed:
             for k, v in values.items():
-                updated[k].append(v)
+                updated[k].append(v.to_tuple(True))  # TODO: Must be tested
         else:
             # TODO: Add trace of failed readings
             # failed.append(data)
@@ -151,25 +169,26 @@ class ReadConsumption:
         info_log.info(f"[{self.username}] Area Contador Online")
         self.driver.find_element_by_name("ActionReconectar").click()
 
-    def get_actual_consume(self, page: str) -> Tuple[bool, Dict[str, tuple]]:
+    def get_actual_consume(self, page: str) -> Tuple[bool, Dict[str, singleReadData]]:
         """Extract values from page source after getting readings values."""
-        dt = datetime.datetime.now()
-        date = dt.strftime("%d-%m-%Y_%H:%M:%S")
+        date = datetime.datetime.now()
         try:
             soup = bs4.BeautifulSoup(page, features="html.parser")
             actual_read = _actual_read(soup.select(".description")[0].text)
             percent = _relative_percent(soup.select(".percent")[0].text)
             max_power = _max_power(soup.select(".max > span:nth-child(1)")[0].text)
+
             return (
                 True,
-                {self.username: (date, actual_read, percent, max_power)},
+                {self.username: singleReadData(date, actual_read, percent, max_power)},
+                # {self.username: (date, actual_read, percent, max_power)},
             )
         except IndexError:
             # It means that was not possible to get information from page
             # TODO: reschedule task
             return (
                 False,
-                {self.username: (date, None, None, None)},
+                {self.username: singleReadData(date, None, None, None)},
             )
 
     def wait_to_be_clickable(self, selector):
@@ -277,13 +296,6 @@ def read_multiple(pool, users=None, save=True):
         save_results(results)
     print("#" * 20)
     return results
-
-
-# def ui_read_multiple(pool):
-#     """Threadpool script entrypoint."""
-#     users = storage("users")["usuarios"]
-#     results = pool.map(_multiple, users)
-#     return results
 
 
 if __name__ == "__main__":

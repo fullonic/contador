@@ -51,9 +51,15 @@ def start_scheduler():
 
 
 def sched_task(pool: ThreadPool, users: list, save: bool = False):
+    users: list = User.as_list()  # get new users automatically on every run
     results = run.multiple(pool, users, False)
     print("results", results)
-    # TODO: Add results to database
+    for res in results:
+        if res[0] is False:
+            continue
+        else:
+            # TODO: Add results to database
+            data = list(res[1].values())
 
 
 #########################
@@ -150,12 +156,12 @@ def render_plot():
 @app.route("/read")
 def read():
     """Start the process of readings."""
-    users: list = User.as_list()
+
     try:  # avoids start two jobs with same id
         pool = ThreadPool(4)
         print("Starting a new job")
         scheduler.add_job(
-            **scheduler_config(sched_task, (pool, users), datetime.datetime.now())
+            **scheduler_config(sched_task, (pool,), datetime.datetime.now())
         )
         flash("Iniciada nueva consulta automatica", "info")
     except ConflictingIdError:
