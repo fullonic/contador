@@ -36,7 +36,7 @@ def generate_graphic(dni: str, axis: tuple):
         ),
         secondary_y=True,
     )
-    # plot_div = plot(fig, output_type="div", include_plotlyjs=False)
+
     fig.update_layout(
         title=f"Usuario: {dni}",
         autosize=True,
@@ -66,7 +66,7 @@ def _generate_barchart(x_axis, datasets=[], cfg={}):
 
 
 def create_barchart(user_dni, data):
-    x_axis = [f"week {d['week']}, {d['month']}, {d['year']} " for d in data]
+    x_axis = [f"S {d['week']}, {d['month']}, {d['year']} " for d in data]
     ds1 = {"name": "punta", "color": "red", "values": [d["max_punta"] for d in data]}
     ds2 = {"name": "llana", "color": "orange", "values": [d["max_llana"] for d in data]}
     ds3 = {"name": "valle", "color": "green", "values": [d["max_valle"] for d in data]}

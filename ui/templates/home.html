@@ -2,50 +2,48 @@
 
 
 {% block body %}
-<div class="container ml-auto mt-5">
-    <div class="row">
-        <div class="col-md-6">
+<div class="mt-5 row">
+    <div class="col-4">
+    </div>
+        <div class="col-md-4">
             <div class="card">
                 <div class="card-header text-center">
-                    Contador
+                    Lecturas Automaticas
                 </div>
                 <div class="card-body">
                     <div class="card">
                         <div class="card-body text-center">
-                            <a class="btn btn-primary mr-3" href="{{url_for('read')}}">Start readings</a>
-                            <a class="btn btn-primary" href="{{url_for('stop_read')}}">Stop readings</a>
+                            <a class="btn btn-success" href="{{url_for('read')}}">Empenzar</a>
+                            <a class="btn btn-danger disabled" href="{{url_for('stop_read')}}">Parar</a>
 
                         </div>
                     </div>
 
                 </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
+
+            <div class="card mt-3">
                 <div class="card-header text-center">
-                    Usuarios
+                    Datos & Cuentas
                 </div>
                 <div class="card-body">
                     <div class="card">
                         <div class="card-body text-center">
-                            <a class="btn btn-primary" href="#" data-toggle="modal" data-target="#addUserModal">Add
-                                user</a>
-                            <a class="btn btn-primary" href="{{url_for('users_list')}}">User list</a>
+                            <a class="btn btn-danger" href="#" data-toggle="modal" data-target="#addUserModal">Añadir nueva</a>
+                            <a class="btn btn-primary" href="{{url_for('users_list')}}">Lista de cuentas</a>
 
                         </div>
                     </div>
 
                 </div>
             </div>
-        </div>
     </div>
 </div>
 
 
 <!-- add user Modal -->
 <div class="modal" id="addUserModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog mw-100 w-75" role="document">
+    <div class="modal-dialog mw-100 w-50" role="document">
         <div class="modal-content">
             <div class="modal-body addUserModal">
                 {% include "add_user.html" %}
@@ -54,4 +52,6 @@
     </div>
 </div>
 </div>
+
+<!-- ADD API CALL TO GET APP STATS AND UPDATE BTNS -->
 {% endblock %}

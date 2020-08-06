@@ -4,25 +4,27 @@
 {% block body %}
 <div class="card">
   <div class="card-header text-center">
-    Contador
+    Añadir nueva cuenta
   </div>
   <div class="card-body">
     <form action="{{url_for('add_user')}}" method="POST">
       <div class="form-group">
-        <label for="exampleInputEmail1">Email address</label>
-        <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+        <label for="inputDNI">DNI/NIE</label>
+        <input type="text" name="username" class="form-control" id="inputDNI" aria-describedby="dniHelp" required>
       </div>
       <div class="form-group">
-        <label for="exampleInputPassword1">Password</label>
-        <input type="password" name="password" class="form-control" id="exampleInputPassword1">
+        <label for="inputPassword">Contraseña</label>
+        <input type="password" name="password" class="form-control" id="inputPassword" required>
       </div>
       <div class="form-group">
-        <label for="exampleInputPassword2">Name</label>
-        <input class="form-control" name="name" id="exampleInputPassword2">
+        <label for="inputName">Nombre</label>
+        <input class="form-control" name="name" id="inputName">
       </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
+      <button type="submit" class="btn btn-success">Confirmar</button>
+      <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
     </form>
   </div>
 </div>
+
+
 {% endblock %}
