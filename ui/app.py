@@ -1,25 +1,30 @@
 import datetime
-import logging
-from pathlib import Path
 import json
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.schedulers import (
-    SchedulerNotRunningError,
-    SchedulerAlreadyRunningError,
-)
-from apscheduler.jobstores.base import ConflictingIdError
-
+import logging
+import sqlite3
 from multiprocessing.pool import ThreadPool
+from pathlib import Path
 
-from flask import Flask, render_template, url_for, redirect, request, jsonify
+
+from apscheduler.jobstores.base import ConflictingIdError
+from apscheduler.schedulers import (
+    SchedulerAlreadyRunningError,
+    SchedulerNotRunningError,
+)
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, flash, jsonify, redirect, render_template, request, url_for
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
 from scrapper import run
-from ui.graphs import create_barchart
 from scrapper.contador import get_config
+from ui.graphs import create_barchart
+
+# db.create_all()
+
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 log = logging.getLogger("werkzeug")
@@ -59,7 +64,6 @@ def sched_task(pool, save=False):
 @app.route("/")
 def home():
     config = get_config()
-    # TODO: add flash msg to base template
     return render_template("home.html", config=config)
 
 
@@ -71,12 +75,18 @@ def users_list():
 @app.route("/add_user", methods=["GET", "POST"])
 def add_user():
     if request.method == "POST":
-        db_add_user(
-            dni=request.form["username"],
-            password=request.form["password"],
-            name=request.form["name"],
-        )
-        # TODO: Add flask message
+        try:
+            db_add_user(
+                dni=request.form["username"],
+                password=request.form["password"],
+                name=request.form["name"],
+            )
+            flash(f"Nueva cuenta añadida [{request.form['username']}]", "info")
+        except Exception:
+            flash(
+                f"Ya existe una cuenta con el DNI/NIE [{request.form['username']}]",
+                "danger",
+            )
         return redirect(url_for("home"))
     return render_template("add_user.html")
 
@@ -97,7 +107,7 @@ def settings():
     cfg["browser"].update(cfg_updated)
     with open(f"{base_path}/config.json", "w") as cfg_file:
         json.dump(cfg, cfg_file)
-    # flash("S'ha actualitzat la configuració", "info")
+    flash("Configuraciones actualizadas", "info")
     return redirect(url_for("home"))
 
 
@@ -135,6 +145,7 @@ def read():
         scheduler.add_job(
             **scheduler_config(sched_task, (pool,), datetime.datetime.now())
         )
+        flash("Iniciada nueva consulta automatica", "info")
     except ConflictingIdError:
         pass
 
@@ -144,13 +155,12 @@ def read():
 @app.route("/stop_read")
 def stop_read():
     """Stop the process of readings."""
-    print("Stopping job")
+    flash("Terminadas las consultas automatica.", "info")
     scheduler.remove_job("contador")
     return redirect(url_for("home"))
 
 
-# db.create_all()
-from ui.models import User, Read, db_add_user, UserTotalStats  # noqa
+from ui.models import Read, User, UserTotalStats, db_add_user  # noqa
 
 if __name__ == "__main__":
     app.run(debug=True)

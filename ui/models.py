@@ -6,11 +6,14 @@ from itertools import groupby
 from typing import List, NamedTuple, Iterator
 from dataclasses import dataclass, field
 import itertools
+import sqlite3
 
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import extract, and_, or_
 
 from ui.app import db
+
+
 class User(db.Model):
     """User database model."""
 
@@ -269,12 +272,14 @@ class UserTotalStats:
 #########################
 def db_add_user(dni, password, name):
     """Add new user to db."""
+
     try:
         new_user = User(dni=dni, password=password, name=name)
         db.session.add(new_user)
         db.session.commit()
-    except Exception as e:
-        print(e)
+        return True
+    except sqlite3.IntegrityError:
+        raise Exception(f"Ya existe una cuenta con el DNI/NIE [{dni}] ")
 
 
 def calculate_max_consumption_peak(data: list):
