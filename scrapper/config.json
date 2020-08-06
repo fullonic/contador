@@ -1,1 +1,1 @@
-{"browser": {"headless": "yes", "timeout": "30", "native_events_enabled": "yes", "gecko_driver": "/usr/local/bin/geckodriver"}, "script": {"frecuencia [minutos]": "10"}}
+{"browser": {"headless": "yes", "timeout": "30", "native_events_enabled": "yes", "gecko_driver": "/usr/local/bin/geckodriver"}, "script": {"frecuencia [minutos]": "5"}}

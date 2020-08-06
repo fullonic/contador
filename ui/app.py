@@ -4,7 +4,7 @@ import logging
 import sqlite3
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-
+from typing import List
 
 from apscheduler.jobstores.base import ConflictingIdError
 from apscheduler.schedulers import (
@@ -23,7 +23,7 @@ from ui.graphs import create_barchart
 
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///read_db.db"
 app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
@@ -50,8 +50,8 @@ def start_scheduler():
     scheduler.start()
 
 
-def sched_task(pool, save=False):
-    results = run.multiple(pool, False)
+def sched_task(pool: ThreadPool, users: list, save: bool = False):
+    results = run.multiple(pool, users, False)
     print("results", results)
     # TODO: Add results to database
 
@@ -139,11 +139,12 @@ def render_plot():
 @app.route("/read")
 def read():
     """Start the process of readings."""
+    users: list = User.as_list()
     try:  # avoids start two jobs with same id
         pool = ThreadPool(4)
         print("Starting a new job")
         scheduler.add_job(
-            **scheduler_config(sched_task, (pool,), datetime.datetime.now())
+            **scheduler_config(sched_task, (pool, users), datetime.datetime.now())
         )
         flash("Iniciada nueva consulta automatica", "info")
     except ConflictingIdError:
@@ -161,6 +162,7 @@ def stop_read():
 
 
 from ui.models import Read, User, UserTotalStats, db_add_user  # noqa
+
 
 if __name__ == "__main__":
     app.run(debug=True)

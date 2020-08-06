@@ -41,6 +41,14 @@ class User(db.Model):
             "users": [{"dni": user.dni, "name": user.name} for user in cls.query.all()]
         }
 
+    @classmethod
+    def as_list(cls):
+        """Return a list of all users in a dict format to be consumed by the contador script."""
+        return [
+            {"username": user.dni, "password": user.password}
+            for user in cls.query.all()
+        ]
+
 
 class Read(db.Model):
     __tablename__ = "reads"

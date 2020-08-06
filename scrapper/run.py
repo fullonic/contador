@@ -52,6 +52,6 @@ def single():
 
 
 @run_safe
-def multiple(pool, save: bool):
+def multiple(pool, users, save: bool):
     """Run script inside a thread pool."""
-    return contador.read_multiple(pool, save)
+    return contador.read_multiple(pool, users, save)

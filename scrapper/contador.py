@@ -268,9 +268,10 @@ def _multiple(user):
     ).get_reading()
 
 
-def read_multiple(pool, save=True):
+def read_multiple(pool, users=None, save=True):
     """Threadpool script entrypoint."""
-    users = storage("users")["usuarios"]
+    if not users:
+        users = storage("users")["usuarios"]
     results = pool.map(_multiple, users)
     if save:
         save_results(results)
