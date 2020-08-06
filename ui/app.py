@@ -1,6 +1,7 @@
 import datetime
 import logging
-
+from pathlib import Path
+import json
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers import (
     SchedulerNotRunningError,
@@ -15,7 +16,7 @@ from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
 from scrapper import run
 from ui.graphs import create_barchart
-
+from scrapper.contador import get_config
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
@@ -57,8 +58,9 @@ def sched_task(pool, save=False):
 
 @app.route("/")
 def home():
+    config = get_config()
     # TODO: add flash msg to base template
-    return render_template("home.html")
+    return render_template("home.html", config=config)
 
 
 @app.route("/users_list")
@@ -82,6 +84,21 @@ def add_user():
 #########################
 # API Endpoints
 #########################
+
+
+@app.route("/settings", methods=["POST", "GET"])
+def settings():
+    """Update cfg file from UI."""
+    base_path = Path(__file__).parent.parent / "scrapper"
+    cfg_updated: dict = request.form.to_dict()
+    cfg = get_config()
+    # update current cfg
+    cfg["script"]["frecuencia [minutos]"] = cfg_updated.pop("frecuencia [minutos]")
+    cfg["browser"].update(cfg_updated)
+    with open(f"{base_path}/config.json", "w") as cfg_file:
+        json.dump(cfg, cfg_file)
+    # flash("S'ha actualitzat la configuració", "info")
+    return redirect(url_for("home"))
 
 
 @app.route("/get_all_users", methods=["GET"])
