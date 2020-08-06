@@ -98,13 +98,24 @@ def add_user():
 
 @app.route("/settings", methods=["POST", "GET"])
 def settings():
-    """Update cfg file from UI."""
+    """Update cfg file from UI.
+
+    TODO: Create a function update_config
+    """
     base_path = Path(__file__).parent.parent / "scrapper"
     cfg_updated: dict = request.form.to_dict()
     cfg = get_config()
     # update current cfg
-    cfg["script"]["frecuencia [minutos]"] = cfg_updated.pop("frecuencia [minutos]")
-    cfg["browser"].update(cfg_updated)
+    cfg["script"]["frecuencia [minutos]"] = int(cfg_updated.pop("frecuencia [minutos]"))
+    cfg["browser"]["gecko_driver"] = cfg_updated.pop("gecko_driver")
+
+    v: str
+    for k, v in cfg_updated.items():
+        try:
+            cfg["browser"][k] = int(v)  # timeout value
+        except ValueError:
+            cfg["browser"][k] = True if v == "True" else False
+
     with open(f"{base_path}/config.json", "w") as cfg_file:
         json.dump(cfg, cfg_file)
     flash("Configuraciones actualizadas", "info")

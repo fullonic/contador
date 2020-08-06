@@ -3,7 +3,7 @@
   <div class="card mt-3">
     <div class="card-header">
       <div class="row">
-        <div class="col-md-10">Configuracion</div>
+        <div class="col-md-10 text-center">Configuracion</div>
       </div>
     </div>
     <div class="card-body">
@@ -21,15 +21,15 @@
       </div>
       <div class="form-row">
         <div class="form-check mr-3">
-          <input class="form-check-input" name="headless" type="checkbox" value="yes" id="runHeadless"
+          <input class="form-check-input" name="headless" type="checkbox" value="True" id="runHeadless"
             {% if config.browser.headless %}checked{% endif %}>
           <label class="form-check-label" for="runHeadless">
             Headless Mode
           </label>
         </div>
         <div class="form-check mr-3">
-          <input class="form-check-input" name="native_events_enabled" type="checkbox" value="yes" id="native_events_enabled"
-            {% if config.browser.native_events_enabled %}checked{% endif %}>
+          <input class="form-check-input" name="native_events_enabled" type="checkbox" value="True"
+            id="native_events_enabled" {% if config.browser.native_events_enabled %}checked{% endif %}>
           <label class="form-check-label" for="native_events_enabled">
             Native events
           </label>
