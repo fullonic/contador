@@ -25,6 +25,9 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///read_db.db"
 app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# TODO: Create a permant contador status to start app automatically after
+# electric power failure
+app.config["STATUS"] = {"running": False}  # FIXME
 db = SQLAlchemy(app)
 log = logging.getLogger("werkzeug")
 log.disabled = True
@@ -70,7 +73,8 @@ def sched_task(pool: ThreadPool, save: bool = False):
 def home():
     """Application GUI home page."""
     config = get_config()
-    return render_template("home.html", config=config)
+    status = app.config["STATUS"]
+    return render_template("home.html", config=config, status=status)
 
 
 @app.route("/users_list")
@@ -164,6 +168,7 @@ def read():
             **scheduler_config(sched_task, (pool,), datetime.datetime.now())
         )
         flash("Iniciada nueva consulta automatica", "info")
+        app.config["STATUS"]["running"] = True
     except ConflictingIdError:
         pass
 
@@ -175,6 +180,7 @@ def stop_read():
     """Stop the process of readings."""
     flash("Terminadas las consultas automatica.", "info")
     scheduler.remove_job("contador")
+    app.config["STATUS"]["running"] = False
     return redirect(url_for("home"))
 
 

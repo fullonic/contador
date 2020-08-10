@@ -24,7 +24,7 @@
         }
     }
 
-    body{
+    body {
         overflow-x: hidden;
     }
 </style>
@@ -39,8 +39,8 @@
             <div class="card-body">
                 <div class="card">
                     <div class="card-body text-center">
-                        <a class="btn btn-success" href="{{url_for('read')}}">Empenzar</a>
-                        <a class="btn btn-danger disabled" href="{{url_for('stop_read')}}">Parar</a>
+                        <a class="btn btn-success" id="startContador" href="{{url_for('read')}}">Empenzar</a>
+                        <a class="btn btn-danger" id="stopContador" href="{{url_for('stop_read')}}">Parar</a>
 
                     </div>
                 </div>
@@ -98,5 +98,16 @@
 </div>
 </div>
 
+<script type="text/javascript">
+    let contadorStatusRunning = {{ status.running| tojson}};
+    if (contadorStatusRunning == true) {
+        document.getElementById("stopContador").classList.remove("disabled")
+        document.getElementById("startContador").classList.add("disabled")
+    } else {
+        document.getElementById("stopContador").classList.add("disabled")
+        document.getElementById("startContador").classList.remove("disabled")
+    }
+
+</script>
 <!-- ADD API CALL TO GET APP STATS AND UPDATE BTNS -->
 {% endblock %}
