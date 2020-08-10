@@ -19,10 +19,9 @@ from scrapper import run
 from scrapper.contador import get_config
 from ui.graphs import create_barchart
 
-# db.create_all()
-
 
 app = Flask(__name__)
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///read_db.db"
 app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -50,16 +49,16 @@ def start_scheduler():
     scheduler.start()
 
 
-def sched_task(pool: ThreadPool, users: list, save: bool = False):
-    users: list = User.as_list()  # get new users automatically on every run
+def sched_task(pool: ThreadPool, save: bool = False):
+    """Schedule call to run contador script automatically on background."""
+    users: list = User.as_list()  # will get new users automatically on every run
     results = run.multiple(pool, users, False)
-    print("results", results)
     for res in results:
         if res[0] is False:
             continue
         else:
             # TODO: Add results to database
-            data = list(res[1].values())
+            add_reads(res[1])
 
 
 #########################
@@ -69,6 +68,7 @@ def sched_task(pool: ThreadPool, users: list, save: bool = False):
 
 @app.route("/")
 def home():
+    """Application GUI home page."""
     config = get_config()
     return render_template("home.html", config=config)
 
@@ -178,8 +178,9 @@ def stop_read():
     return redirect(url_for("home"))
 
 
-from ui.models import Read, User, UserTotalStats, db_add_user  # noqa
+from ui.models import Read, User, UserTotalStats, db_add_user, add_reads  # noqa
 
+db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)

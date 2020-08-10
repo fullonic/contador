@@ -23,6 +23,10 @@
             width: 50% !important;
         }
     }
+
+    body{
+        overflow-x: hidden;
+    }
 </style>
 <div class="mt-5 row">
     <div class="col-4">
@@ -52,7 +56,7 @@
                 <div class="card">
                     <div class="card-body text-center">
                         <a class="btn btn-danger" href="#" data-toggle="modal" data-target="#addUserModal">Añadir
-                            nueva</a>
+                            cuenta</a>
                         <a class="btn btn-primary" href="{{url_for('users_list')}}">Lista de cuentas</a>
 
                     </div>
@@ -61,8 +65,7 @@
             </div>
         </div>
     </div>
-    <div class="col-4">
-        <!-- <img class="settings" src="../static/settings.svg" alt=""> -->
+    <div class="col-4 mt-2">
         <a href="#" data-toggle="modal" data-target="#settingsModal">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
                 <path fill-rule="evenodd"

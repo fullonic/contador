@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, NamedTuple
 import logging
 from dataclasses import dataclass
 import bs4  # type: ignore
@@ -26,7 +26,7 @@ base_path = Path(__file__).parent
 
 
 @dataclass
-class singleReadData:
+class singleReadData():
     """TODO: Implement Results to have this format."""
 
     date: datetime.datetime

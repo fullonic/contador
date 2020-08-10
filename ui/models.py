@@ -3,7 +3,7 @@
 """
 import datetime
 from itertools import groupby
-from typing import List, NamedTuple, Iterator
+from typing import List, NamedTuple, Iterator, Dict
 from dataclasses import dataclass, field
 import itertools
 import sqlite3
@@ -12,6 +12,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import extract, and_, or_
 
 from ui.app import db
+from scrapper.contador import singleReadData
 
 
 class User(db.Model):
@@ -166,14 +167,14 @@ class Read(db.Model):
         ).all()
 
 
-@dataclass
-class singleReadData:
-    """TODO: Implement Results to have this format."""
+# @dataclass
+# class singleReadData:
+#     """TODO: Implement Results to have this format."""
 
-    date: datetime.datetime
-    power: float
-    percent: float
-    max_power: float
+#     date: datetime.datetime
+#     power: float
+#     percent: float
+#     max_power: float
 
 
 class Timestamp(NamedTuple):
@@ -290,7 +291,6 @@ class UserTotalStats:
 #########################
 def db_add_user(dni, password, name):
     """Add new user to db."""
-
     try:
         new_user = User(dni=dni, password=password, name=name)
         db.session.add(new_user)
@@ -298,6 +298,24 @@ def db_add_user(dni, password, name):
         return True
     except sqlite3.IntegrityError:
         raise Exception(f"Ya existe una cuenta con el DNI/NIE [{dni}] ")
+
+
+def add_reads(results: Dict[str, singleReadData]):
+    """Add new read to db."""
+
+    dni, data = list(results.items())[0]
+    date, power, percent, max_power = data.to_tuple()
+    user = User.get_by_dni(dni)
+    read = Read(
+        instantaneous_consume=power,
+        percent=percent,
+        max_power=max_power,
+        date=date,
+        weekend=is_weekend(date),
+        user=user,
+    )
+    db.session.add(read)
+    db.session.commit()
 
 
 def calculate_max_consumption_peak(data: list):

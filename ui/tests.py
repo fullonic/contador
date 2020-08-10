@@ -19,6 +19,7 @@ from ui.models import (
     calculate_average_consumption,
     UserTotalStats,
     WeekStats,
+    is_weekend
 )
 from scrapper.contador import singleReadData
 
@@ -220,9 +221,9 @@ def test_add_results_into_db():
             {
                 "47635719M": singleReadData(
                     date=datetime.datetime(2020, 8, 6, 19, 44, 47, 702887),
-                    power=None,
-                    percent=None,
-                    max_power=None,
+                    power=2,
+                    percent=2,
+                    max_power=2,
                 )
             },
         ),
@@ -231,7 +232,25 @@ def test_add_results_into_db():
         if res[0] is False:
             continue
         else:
+            dni, data = list(res[1].items())[0]
             # TODO: Add results to database
-            date, power, percent, max_power = list(res[1].values())[0].to_tuple()
+            date, power, percent, max_power = data.to_tuple()
+
             print(date, power, percent, max_power)
-            # breakpoint()
+            user = User.get_by_dni(dni)
+            Read(
+                instantaneous_consume=power,
+                percent=percent,
+                max_power=max_power,
+                date=date,
+                weekend=is_weekend(date),
+                user=user,
+            )
+
+    user = User.get_by_dni("47635719M")
+    last_insert = user.reads.all()[-1]
+    assert last_insert.instantaneous_consume == 2
+    assert last_insert.max_power == 2
+    assert last_insert.percent == 2
+    assert last_insert.weekend is False
+
