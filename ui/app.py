@@ -21,8 +21,7 @@ from ui.graphs import create_barchart
 
 
 app = Flask(__name__)
-# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///read_db.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 # TODO: Create a permant contador status to start app automatically after
