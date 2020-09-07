@@ -29,7 +29,8 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 
 echo "Installacion completa."
-echo "Para iniciar consulta automatica:"
-echo "python auto_run.py"
-echo "o para varias consultas en paralelo:"
-echo "python auto_run.py multiple"
+echo "Para empenzar a utilizar el 'Contador' haga en este terminal:"
+echo "python start_ui.py"
+echo ""
+echo "Para mas info visite:"
+echo "https://github.com/fullonic/contador/blob/master/README.md"
