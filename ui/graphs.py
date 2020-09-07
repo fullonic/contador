@@ -38,7 +38,7 @@ def generate_graphic(dni: str, axis: tuple):
     )
 
     fig.update_layout(
-        title=f"Usuario: {dni}",
+        title=f"Contador: {dni}",
         autosize=True,
         margin=dict(l=50, r=50, b=10, t=50, pad=1),
     )
@@ -54,9 +54,10 @@ def create_plot(dni: str, data: list):
     return plot_
 
 
-def _generate_barchart(x_axis, datasets=[], cfg={}):
+def _generate_barchart(x_axis: list, datasets: list, cfg: dict):
+    """Generate a barchart grouped by week with values of 'punta', 'llane' and 'valle'."""
     data = [
-        go.Bar(name=ds["name"], x=x_axis, y=ds["values"], marker={"color":ds["color"]})
+        go.Bar(name=ds["name"], x=x_axis, y=ds["values"], marker={"color": ds["color"]})
         for ds in datasets
     ]
     fig = go.Figure(data=data)
@@ -66,13 +67,14 @@ def _generate_barchart(x_axis, datasets=[], cfg={}):
 
 
 def create_barchart(user_dni, data):
+    """API to create a barchart grouped by week."""
     x_axis = [f"S {d['week']}, {d['month']}, {d['year']} " for d in data]
     ds1 = {"name": "punta", "color": "red", "values": [d["max_punta"] for d in data]}
     ds2 = {"name": "llana", "color": "orange", "values": [d["max_llana"] for d in data]}
     ds3 = {"name": "valle", "color": "green", "values": [d["max_valle"] for d in data]}
     cfg = {
-        "title": f"Usuario {user_dni}",
+        "title": f"Contador: {user_dni}",
         "autosize": True,
-        "margin": dict(l=50, r=50, b=10, t=50, pad=1),
+        "margin": dict(l=50, r=50, b=10, t=50, pad=1),  # noqa
     }
-    barchart = _generate_barchart(x_axis=x_axis, datasets=[ds1, ds2, ds3], cfg=cfg)
+    _generate_barchart(x_axis=x_axis, datasets=[ds1, ds2, ds3], cfg=cfg)

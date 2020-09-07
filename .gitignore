@@ -7,3 +7,4 @@ error.log
 results.json
 users.json
 read_db.db
+*.code*
