@@ -1,6 +1,7 @@
 __pycache__
 .mypy_cache
 .vscode
+.pytest_cache
 venv
 geckodriver.log
 error.log

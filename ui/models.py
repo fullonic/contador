@@ -321,19 +321,19 @@ def add_reads(results: Dict[str, singleReadData]):
 def calculate_max_consumption_peak(data: list):
     """Max consumption peak."""
     try:
-        return max(row.instantaneous_consume for row in data)
+        return round(max(row.instantaneous_consume for row in data), 2)
     except ValueError:  # data is empty
         return
 
 
 def calculate_min_consumption_peak(data: list):
     """Min consumption peak."""
-    return min(row.instantaneous_consume for row in data)
+    return round(min(row.instantaneous_consume for row in data), 2)
 
 
 def calculate_average_consumption(data: list):
     """Average consumption."""
-    return sum(row.instantaneous_consume for row in data) / len(data)
+    return round(sum(row.instantaneous_consume for row in data) / len(data), 2)
 
 
 def is_weekend(dt: datetime.datetime):
