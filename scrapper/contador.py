@@ -4,14 +4,16 @@ import datetime
 import json
 import os
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict, List, Tuple, NamedTuple
 import logging
 from dataclasses import dataclass
+import random
+
 import bs4  # type: ignore
-from fake_useragent import UserAgent  # type: ignore
+# from fake_useragent import UserAgent  # type: ignore
 from selenium import webdriver  # type: ignore
 from selenium.common.exceptions import (  # type: ignore
     ElementClickInterceptedException,
@@ -40,7 +42,17 @@ class singleReadData():
             date = date.strftime("%d-%m-%Y_%H:%M:%S")  # type: ignore
         return (date, self.power, self.percent, self.max_power)
 
+@dataclass
+class UserAgent:
+    ua_list: list = field(default_factory=list)
 
+    @property
+    def random(self):
+        with open("./scrapper/user_agents.txt") as f:
+            self.ua_list = f.readlines()
+        ua = random.choice(self.ua_list).strip()
+        print(f"{ua=}")
+        return ua
 #########################
 # loggers
 #########################
@@ -162,9 +174,9 @@ class ReadConsumption:
 
     def contador_online(self):
         """Navigate into consume area."""
-        btn = self.driver.find_element_by_css_selector(
-            "div.slds-col:nth-child(8) > div:nth-child(1) > div:nth-child(1)"
-        )
+        btn_selector = "li.slds-col:nth-child(8) > span:nth-child(1) > button:nth-child(1)"
+        # btn_selector = "div.slds-col:nth-child(8) > div:nth-child(1) > div:nth-child(1)"  # old
+        btn = self.driver.find_element_by_css_selector(btn_selector)
         btn.click()
         info_log.info(f"[{self.username}] Area Contador Online")
         self.driver.find_element_by_name("ActionReconectar").click()
@@ -238,7 +250,7 @@ class ReadConsumption:
         while True:
             # time.sleep(1)
             if self._read_succeed():
-                info_log.info(f"[{self.username}] Solicitud de aceptada")
+                info_log.info(f"[{self.username}] Solicitud aceptada")
                 status = True
                 break
             else:
