@@ -117,13 +117,15 @@ def settings():
     # update current cfg
     cfg["script"]["frecuencia [minutos]"] = int(cfg_updated.pop("frecuencia [minutos]"))
     cfg["browser"]["gecko_driver"] = cfg_updated.pop("gecko_driver")
-
-    v: str
+    cfg["browser"]["headless"] = cfg_updated.get("headless", False)
+    cfg["browser"]["native_events_enabled"] = cfg_updated.get(
+        "native_events_enabled", False
+    )
     for k, v in cfg_updated.items():
         try:
             cfg["browser"][k] = int(v)  # timeout value
         except ValueError:
-            cfg["browser"][k] = True if v == "True" else False
+            pass
 
     with open(f"{base_path}/config.json", "w") as cfg_file:
         json.dump(cfg, cfg_file)
