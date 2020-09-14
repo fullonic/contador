@@ -99,7 +99,9 @@ def add_user():
         return redirect(url_for("home"))
     return render_template("add_user.html")
 
-
+@app.route("/edit_user", methods=["GET", "POST"])
+def edit_user():
+    return None
 #########################
 # API Endpoints
 #########################
