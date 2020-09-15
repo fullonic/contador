@@ -317,7 +317,17 @@ def add_reads(results: Dict[str, singleReadData]):
     db.session.add(read)
     db.session.commit()
 
+def update_user(dni, updated: dict):
+    user = User.get_by_dni(dni)
+    user.name = updated["name"]
+    user.password = updated["password"]
+    db.session.commit()
+    return user
 
+def delete_user(dni):
+    user = User.get_by_dni(dni)
+    db.session.delete(user)
+    db.session.commit()
 def calculate_max_consumption_peak(data: list):
     """Max consumption peak."""
     try:

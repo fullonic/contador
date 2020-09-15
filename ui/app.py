@@ -99,12 +99,28 @@ def add_user():
         return redirect(url_for("home"))
     return render_template("add_user.html")
 
-@app.route("/edit_user", methods=["GET", "POST"])
-def edit_user():
-    return None
+
+@app.route("/edit_user/<dni>", methods=["GET", "POST"])
+def edit_user(dni):
+    """Edit/ Delete user account."""
+    if request.method == "POST":
+        flash(f"Cuenta {dni} actualizada ", "success")
+        # updated_user = update_user(dni, request.form.to_dict())
+        # return render_template("edit_user.html", user=updated_user)
+        return redirect(url_for("users_list"))
+    edit_user = User.get_by_dni(dni)
+    return render_template("edit_user.html", user=edit_user)
+
+
 #########################
 # API Endpoints
 #########################
+@app.route("/delete_user/<dni>", methods=["GET"])
+def delete_user(dni):
+    """Remove user account from db."""
+    delete_user(dni)
+    flash(f"Cuenta {dni} borrada", "success")
+    return redirect(url_for("users_list"))
 
 
 @app.route("/settings", methods=["POST", "GET"])
@@ -187,7 +203,15 @@ def stop_read():
     return redirect(url_for("home"))
 
 
-from ui.models import Read, User, UserTotalStats, db_add_user, add_reads  # noqa
+from ui.models import (
+    Read,
+    User,
+    UserTotalStats,
+    db_add_user,
+    add_reads,
+    update_user,
+    delete_user,
+)  # noqa
 
 db.create_all()
 
