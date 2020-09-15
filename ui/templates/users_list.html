@@ -151,7 +151,7 @@
             <td>
                 <a href="#" class="badge badge-info" name=${user.dni} onClick="getPlot(name)">grafico</a>
                 <a href="{{url_for('edit_user', dni='')}}${user.dni}" class="badge badge-warning" name=${user.dni}>editar</a>
-                <a href="#" class="badge badge-success" name=${user.dni} onClick="editUser(name)">exportar</a>
+                <a href="{{url_for('export_csv', dni='')}}${user.dni}" class="badge badge-success" name=${user.dni}>exportar</a>
             </td>
         </tr>`
         body += template
@@ -171,6 +171,16 @@
             .then(response => response.text())
             .then(data => addPlot(data));
 
+    }
+    function exportData(dni){
+        document.getElementById("spinner-front").classList.remove("d-none")
+        document.getElementById("spinner-back").classList.remove("d-none")
+
+        let url = "http://localhost:5001/export_csv/" + dni;
+        console.log(url);
+        fetch(url)
+            .then(response => response.text())
+            //.then(data => addPlot(data));
     }
     function addPlot(plot) {
         console.log(plot);

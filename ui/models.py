@@ -14,7 +14,6 @@ from sqlalchemy import extract, and_, or_
 from ui.app import db
 from scrapper.contador import singleReadData
 
-
 class User(db.Model):
     """User database model."""
 
@@ -308,7 +307,7 @@ def add_reads(results: Dict[str, singleReadData]):
     user = User.get_by_dni(dni)
     read = Read(
         instantaneous_consume=power,
-        percent=percent,
+        percent=round(percent, 2),
         max_power=max_power,
         date=date,
         weekend=is_weekend(date),

@@ -5,14 +5,24 @@ import sqlite3
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import List
-
+import tempfile
 from apscheduler.jobstores.base import ConflictingIdError
 from apscheduler.schedulers import (
     SchedulerAlreadyRunningError,
     SchedulerNotRunningError,
 )
 from apscheduler.schedulers.background import BackgroundScheduler
-from flask import Flask, flash, jsonify, redirect, render_template, request, url_for
+from flask import (
+    Flask,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    url_for,
+    send_from_directory,
+    send_file,
+)
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
 from scrapper import run
@@ -24,6 +34,7 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["CSV_FOLDER"] = "ui/static/csv_files"
 # TODO: Create a permant contador status to start app automatically after
 # electric power failure
 app.config["STATUS"] = {"running": False}  # FIXME
@@ -61,6 +72,7 @@ def sched_task(pool: ThreadPool, save: bool = False):
         else:
             # TODO: Add results to database
             add_reads(res[1])
+    # TODO: Delete all csv if exist
 
 
 #########################
@@ -115,6 +127,45 @@ def edit_user(dni):
 #########################
 # API Endpoints
 #########################
+import shutil
+import csv
+
+
+def _export_csv(dni):
+    user_records = User.all_reads(dni)
+    fname = f"DATA_{dni}.csv"
+    floc = f"{app.config['CSV_FOLDER']}/{fname}"
+    with open(floc, "w") as f:
+        csv_writer = csv.writer(f)
+        csv_writer.writerow(
+            ["instantaneous_consume", "percent", "max_power", "date", "weekend"]
+        )
+        for rec in user_records:
+            csv_writer.writerow(
+                [
+                    rec.instantaneous_consume,
+                    rec.percent,
+                    rec.max_power,
+                    rec.date,
+                    rec.weekend,
+                ]
+            )
+
+
+    return Path(floc).resolve()
+
+
+@app.route("/export_csv/<dni>")
+def export_csv(dni: str):
+    # export csv lower level func
+    # get temp file path location
+    # send from directory
+    csv_file: Path = _export_csv(dni)
+
+    print((csv_file.parent, csv_file.name))
+    return send_from_directory(csv_file.parent, csv_file.name)
+
+
 @app.route("/delete_user/<dni>", methods=["GET"])
 def delete_user(dni):
     """Remove user account from db."""
