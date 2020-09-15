@@ -132,8 +132,9 @@ import csv
 
 
 def _export_csv(dni):
+    dni = dni.split(".")[0]
     user_records = User.all_reads(dni)
-    fname = f"DATA_{dni}.csv"
+    fname = f"{dni}.csv"
     floc = f"{app.config['CSV_FOLDER']}/{fname}"
     with open(floc, "w") as f:
         csv_writer = csv.writer(f)
