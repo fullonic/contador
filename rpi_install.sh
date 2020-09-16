@@ -17,6 +17,8 @@ tar -xf $driver
 sudo chmod +x ./geckodriver
 sudo mv ./geckodriver /usr/local/bin/
 rm $driver
+
+sudo chmod +x ./start_app.sh
 echo "Setup python"
 if [ ! -d "venv" ]; then
     echo --------------------
