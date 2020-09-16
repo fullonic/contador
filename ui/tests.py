@@ -19,7 +19,7 @@ from ui.models import (
     calculate_average_consumption,
     UserTotalStats,
     WeekStats,
-    is_weekend
+    is_weekend,
 )
 from scrapper.contador import singleReadData
 
@@ -253,4 +253,3 @@ def test_add_results_into_db():
     assert last_insert.max_power == 2
     assert last_insert.percent == 2
     assert last_insert.weekend is False
-

@@ -1,34 +1,28 @@
+import csv
 import datetime
 import json
 import logging
-import sqlite3
+import tempfile
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import List
-import tempfile
-from apscheduler.jobstores.base import ConflictingIdError
-from apscheduler.schedulers import (
-    SchedulerAlreadyRunningError,
-    SchedulerNotRunningError,
-)
-from apscheduler.schedulers.background import BackgroundScheduler
+
+from apscheduler.jobstores.base import ConflictingIdError  # type: ignore
+from apscheduler.schedulers import SchedulerNotRunningError  # type: ignore
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
 from flask import (
     Flask,
     flash,
-    jsonify,
     redirect,
     render_template,
     request,
-    url_for,
     send_from_directory,
-    send_file,
+    url_for,
 )
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
 from scrapper import run
 from scrapper.contador import get_config
 from ui.graphs import create_barchart
-
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
@@ -45,7 +39,39 @@ log.disabled = True
 scheduler = BackgroundScheduler()
 
 
+#########################
+# Helper functions
+#########################
+def start_reads():
+    """Start the process of readings."""
+    try:  # avoids start two jobs with same id
+        update_status(True)
+        pool = ThreadPool(4)
+        print("Starting a new job")
+        scheduler.add_job(
+            **scheduler_config(sched_task, (pool,), datetime.datetime.now())
+        )
+
+        app.config["STATUS"]["running"] = True
+    except ConflictingIdError:
+        pass
+
+
+def get_contador_status() -> bool:
+    """Get contador running status."""
+    with open("status.json") as f:
+        status = json.load(f)
+    return status["running"]
+
+
+def update_status(status: bool):
+    """Update contadtor running status based in user action."""
+    with open("status.json", "w") as f:
+        json.dump({"running": status}, f)
+
+
 def scheduler_config(fn, args, start):
+    """Scheduler base configurations."""
     return {
         "func": fn,
         "args": args,
@@ -58,12 +84,17 @@ def scheduler_config(fn, args, start):
 
 @app.before_first_request
 def start_scheduler():
-    print("Starting scheduler")
-    scheduler.start()
+    """Start scheduler but without any tasks."""
+    try:
+        print("Starting scheduler")
+        scheduler.start()
+    except SchedulerAlreadyRunningError:
+        pass
 
 
 def sched_task(pool: ThreadPool, save: bool = False):
     """Schedule call to run contador script automatically on background."""
+
     users: list = User.as_list()  # will get new users automatically on every run
     results = run.multiple(pool, users, False)
     for res in results:
@@ -127,8 +158,6 @@ def edit_user(dni):
 #########################
 # API Endpoints
 #########################
-import shutil
-import csv
 
 
 def _export_csv(dni):
@@ -152,18 +181,12 @@ def _export_csv(dni):
                 ]
             )
 
-
     return Path(floc).resolve()
 
 
 @app.route("/export_csv/<dni>")
 def export_csv(dni: str):
-    # export csv lower level func
-    # get temp file path location
-    # send from directory
     csv_file: Path = _export_csv(dni)
-
-    print((csv_file.parent, csv_file.name))
     return send_from_directory(csv_file.parent, csv_file.name)
 
 
@@ -230,25 +253,16 @@ def render_plot():
 # Activate reading script
 @app.route("/read")
 def read():
-    """Start the process of readings."""
-
-    try:  # avoids start two jobs with same id
-        pool = ThreadPool(4)
-        print("Starting a new job")
-        scheduler.add_job(
-            **scheduler_config(sched_task, (pool,), datetime.datetime.now())
-        )
-        flash("Iniciada nueva consulta automatica", "info")
-        app.config["STATUS"]["running"] = True
-    except ConflictingIdError:
-        pass
-
+    """App endpoint to start reads."""
+    start_reads()
+    flash("Iniciada nueva consulta automatica", "info")
     return redirect(url_for("home"))
 
 
 @app.route("/stop_read")
 def stop_read():
     """Stop the process of readings."""
+    update_status(False)
     flash("Terminadas las consultas automatica.", "info")
     scheduler.remove_job("contador")
     app.config["STATUS"]["running"] = False
@@ -259,11 +273,11 @@ from ui.models import (
     Read,
     User,
     UserTotalStats,
+    add_reads,  # noqa
     db_add_user,
-    add_reads,
-    update_user,
     delete_user,
-)  # noqa
+    update_user,
+)  # noqa isort:skip
 
 db.create_all()
 
