@@ -23,8 +23,6 @@ from selenium.common.exceptions import (  # type: ignore
 from selenium.webdriver import FirefoxOptions  # type: ignore
 from selenium.webdriver import Firefox, FirefoxProfile
 
-HEADLESS = False
-TIMEOUT = 15
 base_path = Path(__file__).parent
 
 
@@ -265,6 +263,7 @@ class ReadConsumption:
                     info_log.info(f"[{self.username}] Reintentando ...")
                     self.lectura(retry=False)
                 status = False
+                info_log.info(f"[{self.username}] No ha sido posible hacer la lectura")
                 break
         # self.driver.implicitly_wait(30)  # TODO: Get it from cfg info
         return status

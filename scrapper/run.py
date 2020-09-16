@@ -16,9 +16,6 @@ logger_formatter = logging.Formatter("[%(levelname)s] - %(message)s")
 handler.setFormatter(logger_formatter)
 error_log.addHandler(handler)
 
-FREQUENCY = contador.get_config()["script"]["frecuencia [minutos]"]
-
-
 def run_safe(fn):
     """Deal with unexpected errors or miss behaves.
 

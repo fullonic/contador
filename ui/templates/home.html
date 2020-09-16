@@ -99,7 +99,7 @@
 </div>
 
 <script type="text/javascript">
-    let contadorStatusRunning = {{ status.running| tojson}};
+    let contadorStatusRunning = {{ status| tojson}};
     if (contadorStatusRunning == true) {
         document.getElementById("stopContador").classList.remove("disabled")
         document.getElementById("startContador").classList.add("disabled")

@@ -18,7 +18,7 @@ def scheduler_config(fn, args, start):
         "func": fn,
         "args": args,
         "trigger": "interval",
-        "minutes": run.FREQUENCY,
+        "minutes": contador.get_config()["script"]["frecuencia [minutos]"],
         "next_run_time": start,
     }
 

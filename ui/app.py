@@ -41,17 +41,6 @@ scheduler = BackgroundScheduler()
 #########################
 # Helper functions
 #########################
-def start_reads():
-    """Start the process of readings."""
-    try:  # avoids start two jobs with same id
-        update_status(True)
-        pool = ThreadPool(4)
-        print("Comenzando una nueva consulta")
-        scheduler.add_job(
-            **scheduler_config(sched_task, (pool,), datetime.datetime.now())
-        )
-    except ConflictingIdError:
-        pass
 
 
 def get_contador_status() -> bool:
@@ -61,7 +50,20 @@ def get_contador_status() -> bool:
     return status["running"]
 
 
-def update_status(status: bool):
+def start_reads():
+    """Start the process of readings."""
+    try:  # avoids start two jobs with same id
+        update_contador_status(True)
+        pool = ThreadPool(4)
+        print("Comenzando una nueva consulta")
+        scheduler.add_job(
+            **scheduler_config(sched_task, (pool,), datetime.datetime.now())
+        )
+    except ConflictingIdError:
+        pass
+
+
+def update_contador_status(status: bool):
     """Update contadtor running status based in user action."""
     with open("status.json", "w") as f:
         json.dump({"running": status}, f)
@@ -73,7 +75,7 @@ def scheduler_config(fn, args, start):
         "func": fn,
         "args": args,
         "trigger": "interval",
-        "minutes": 15,
+        "minutes": get_config()["script"]["frecuencia [minutos]"],
         "next_run_time": start,
         "id": "contador",
     }
@@ -123,7 +125,6 @@ def sched_task(pool: ThreadPool, save: bool = False):
         else:
             # TODO: Add results to database
             add_reads(res[1])
-    # TODO: Delete all csv if exist
 
 
 #########################
@@ -135,8 +136,7 @@ def sched_task(pool: ThreadPool, save: bool = False):
 def home():
     """Application GUI home page."""
     config = get_config()
-    status = app.config["STATUS"]
-    return render_template("home.html", config=config, status=status)
+    return render_template("home.html", config=config, status=get_contador_status())
 
 
 @app.route("/users_list")
@@ -207,9 +207,9 @@ def settings():
     # update current cfg
     cfg["script"]["frecuencia [minutos]"] = int(cfg_updated.pop("frecuencia [minutos]"))
     cfg["browser"]["gecko_driver"] = cfg_updated.pop("gecko_driver")
-    cfg["browser"]["headless"] = cfg_updated.get("headless", False)
-    cfg["browser"]["native_events_enabled"] = cfg_updated.get(
-        "native_events_enabled", False
+    cfg["browser"]["headless"] = True if cfg_updated.get("headless", False) else False
+    cfg["browser"]["native_events_enabled"] = (
+        True if cfg_updated.get("native_events_enabled", False) else False
     )
     for k, v in cfg_updated.items():
         try:
@@ -259,10 +259,9 @@ def read():
 @app.route("/stop_read")
 def stop_read():
     """Stop the process of readings."""
-    update_status(False)
-    flash("Terminadas las consultas automatica.", "info")
+    flash("Terminadas las consultas automaticas.", "info")
     scheduler.remove_job("contador")
-    app.config["STATUS"]["running"] = False
+    update_contador_status(False)
     return redirect(url_for("home"))
 
 

@@ -7,9 +7,9 @@ from ui.models import User, Read, db_add_user  # noqa
 def was_running():
     """Contador auto status check.
 
-    In case of power failure, at the next app start up, this functions checks if contador
-    was running or not.
-    If it was running, we start it again automatically to ensure that reads keeps on.
+    In case of a electric power failure, at the next app start up, this functions checks
+    if contador was running or not.
+    If it was running, it will start again automatically to ensure that reads keeps on.
     """
     if get_contador_status() is True:
         start_scheduler()
