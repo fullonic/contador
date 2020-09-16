@@ -151,7 +151,7 @@
             <td>
                 <a href="#" class="badge badge-info" name=${user.dni} onClick="getPlot(name)">grafico</a>
                 <a href="{{url_for('edit_user', dni='')}}${user.dni}" class="badge badge-warning" name=${user.dni}>editar</a>
-                <a href="{{url_for('export_csv', dni='')}}${user.dni}.csv" class="badge badge-success" name=${user.dni}>exportar</a>
+                <a href="{{url_for('export_csv', fname='')}}${user.dni}.csv" class="badge badge-success" name=${user.dni}>exportar</a>
             </td>
         </tr>`
         body += template

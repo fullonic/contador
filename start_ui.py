@@ -1,6 +1,7 @@
-import json
-from ui.app import app, db, start_scheduler, start_reads, get_contador_status
-from ui.models import User, Read, db_add_user
+"""Contador UI application starting point."""
+
+from ui.app import app, db, start_scheduler, start_reads, get_contador_status  # noqa
+from ui.models import User, Read, db_add_user  # noqa
 
 
 def was_running():

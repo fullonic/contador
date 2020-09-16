@@ -5,9 +5,10 @@ import logging
 import tempfile
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
+from io import StringIO
 
 from apscheduler.jobstores.base import ConflictingIdError  # type: ignore
-from apscheduler.schedulers import SchedulerNotRunningError  # type: ignore
+from apscheduler.schedulers import SchedulerAlreadyRunningError  # type: ignore
 from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
 from flask import (
     Flask,
@@ -17,6 +18,7 @@ from flask import (
     request,
     send_from_directory,
     url_for,
+    send_file,
 )
 from flask_sqlalchemy import SQLAlchemy  # type: ignore
 
@@ -82,14 +84,29 @@ def scheduler_config(fn, args, start):
     }
 
 
-@app.before_first_request
-def start_scheduler():
-    """Start scheduler but without any tasks."""
-    try:
-        print("Starting scheduler")
-        scheduler.start()
-    except SchedulerAlreadyRunningError:
-        pass
+def _csv_writer(fname):
+    """CSV like text in memory writer.
+
+    Writes a csv like object to be saved later in a tempfile to be send to the user
+    """
+    dni = fname.split(".")[0]
+    user_records = User.all_reads(dni)
+    f = StringIO()
+    csv_writer = csv.writer(f)
+    csv_writer.writerow(
+        ["instantaneous_consume", "percent", "max_power", "date", "weekend"]
+    )
+    for rec in user_records:
+        csv_writer.writerow(
+            [
+                rec.instantaneous_consume,
+                rec.percent,
+                rec.max_power,
+                rec.date,
+                rec.weekend,
+            ]
+        )
+    return f
 
 
 def sched_task(pool: ThreadPool, save: bool = False):
@@ -158,36 +175,13 @@ def edit_user(dni):
 #########################
 # API Endpoints
 #########################
-
-
-def _export_csv(dni):
-    dni = dni.split(".")[0]
-    user_records = User.all_reads(dni)
-    fname = f"{dni}.csv"
-    floc = f"{app.config['CSV_FOLDER']}/{fname}"
-    with open(floc, "w") as f:
-        csv_writer = csv.writer(f)
-        csv_writer.writerow(
-            ["instantaneous_consume", "percent", "max_power", "date", "weekend"]
-        )
-        for rec in user_records:
-            csv_writer.writerow(
-                [
-                    rec.instantaneous_consume,
-                    rec.percent,
-                    rec.max_power,
-                    rec.date,
-                    rec.weekend,
-                ]
-            )
-
-    return Path(floc).resolve()
-
-
-@app.route("/export_csv/<dni>")
-def export_csv(dni: str):
-    csv_file: Path = _export_csv(dni)
-    return send_from_directory(csv_file.parent, csv_file.name)
+@app.route("/export_csv/<fname>")
+def export_csv(fname: str):
+    in_memory_csv: StringIO = _csv_writer(fname)
+    with tempfile.NamedTemporaryFile("w") as f:
+        f.write(in_memory_csv.getvalue())
+        in_memory_csv.close()
+        return send_file(f.name, attachment_filename=fname, mimetype="text/csv")
 
 
 @app.route("/delete_user/<dni>", methods=["GET"])
@@ -267,6 +261,16 @@ def stop_read():
     scheduler.remove_job("contador")
     app.config["STATUS"]["running"] = False
     return redirect(url_for("home"))
+
+
+@app.before_first_request
+def start_scheduler():
+    """Start scheduler but without any tasks."""
+    try:
+        print("Starting scheduler")
+        scheduler.start()
+    except SchedulerAlreadyRunningError:
+        pass
 
 
 from ui.models import (
