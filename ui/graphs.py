@@ -76,5 +76,6 @@ def create_barchart(user_dni, data):
         "title": f"Contador: {user_dni}",
         "autosize": True,
         "margin": dict(l=50, r=50, b=10, t=50, pad=1),  # noqa
+        "legend_title_text": "Horarios",
     }
     _generate_barchart(x_axis=x_axis, datasets=[ds1, ds2, ds3], cfg=cfg)
