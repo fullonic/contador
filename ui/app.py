@@ -30,14 +30,11 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["CSV_FOLDER"] = "ui/static/csv_files"
-# TODO: Create a permant contador status to start app automatically after
-# electric power failure
-app.config["STATUS"] = {"running": False}  # FIXME
-db = SQLAlchemy(app)
+
 log = logging.getLogger("werkzeug")
 log.disabled = True
 
+db = SQLAlchemy(app)
 scheduler = BackgroundScheduler()
 
 
@@ -49,12 +46,10 @@ def start_reads():
     try:  # avoids start two jobs with same id
         update_status(True)
         pool = ThreadPool(4)
-        print("Starting a new job")
+        print("Comenzando una nueva consulta")
         scheduler.add_job(
             **scheduler_config(sched_task, (pool,), datetime.datetime.now())
         )
-
-        app.config["STATUS"]["running"] = True
     except ConflictingIdError:
         pass
 
@@ -94,7 +89,14 @@ def _csv_writer(fname):
     f = StringIO()
     csv_writer = csv.writer(f)
     csv_writer.writerow(
-        ["instantaneous_consume", "percent", "max_power", "date", "weekend"]
+        [
+            "Consumo Instantáneo",
+            "Porcentaje",
+            "Potencia máxima contratada",
+            "Dia",
+            "Hora",
+            "Fin de semana",
+        ]
     )
     for rec in user_records:
         csv_writer.writerow(
@@ -102,8 +104,9 @@ def _csv_writer(fname):
                 rec.instantaneous_consume,
                 rec.percent,
                 rec.max_power,
-                rec.date,
-                rec.weekend,
+                rec.date.strftime("%D"),  # Day
+                rec.date.strftime("%T"),  # Hour
+                ("Si" if rec.weekend is True else "No"),
             ]
         )
     return f
