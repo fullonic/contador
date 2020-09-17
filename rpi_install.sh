@@ -17,9 +17,24 @@ tar -xf $driver
 sudo chmod +x ./geckodriver
 sudo mv ./geckodriver /usr/local/bin/
 rm $driver
-
+# Create start up bash script
+base_dir=$(pwd)
+echo "#!/bin/bash" > start_app.sh
+echo "cd $base_dir && venv/bin/python3 start_ui.py" >> start_app.sh
 sudo chmod +x ./start_app.sh
-echo "Setup python"
+
+# Add startup script to cron
+
+#write out current crontab
+crontab -l > cron_task
+#echo new cron into cron file
+echo " Add cron task @reboot $basedir/start_app.sh"
+echo "@reboot $basedir/start_app.sh" >> cron_task
+#install new cron file
+crontab cron_task
+rm cron_task
+
+echo "Setup Python"
 if [ ! -d "venv" ]; then
     echo --------------------
     echo Creating virtualenv
@@ -31,8 +46,8 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 
 echo "Installacion completa."
-echo "Para empenzar a utilizar el 'Contador' haga en este terminal:"
-echo "python start_ui.py"
+echo "Para empenzar a utilizar el 'Contador' en este terminal enter:"
+echo "./start_app.sh"
 echo ""
 echo "Para mas info visite:"
 echo "https://github.com/fullonic/contador/blob/master/README.md"

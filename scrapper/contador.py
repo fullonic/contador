@@ -51,7 +51,6 @@ class UserAgent:
         with open("./scrapper/user_agents.txt") as f:
             self.ua_list = f.readlines()
         ua = random.choice(self.ua_list).strip()
-        print(f"{ua=}")
         return ua
 
 
