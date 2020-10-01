@@ -11,9 +11,34 @@ Con este script es posible automatizar la consulta periódica al contador online
 
 #### Como utilizar en plataforma tipo Raspberry [recomendado]:
 
-[Paso a paso en breve]
+Una vez dentro de la carpeta `contador`, abrir una terminal y ejecutar el comando:
 
-#### Como utilizar plataforma "Desktop":
+```bash
+>> ./rpi_install.sh
+```
+
+Que hace el script:
+
+1 - Hace una actualización del sistema
+
+
+2 - Download y instalación de las dependencias necesarias: Firefox, Firefox driver y SQLite3 (base de datos)
+
+3 - Crea un nuevo script que es el punto de partir para iniciar la aplicación (start_app.sh)
+
+4 - Añade la aplicación al arranque del sistema \*
+
+5 - Instala todos las librarias de python necesarias
+
+Una vez terminada el proceso, para empezar la aplicación apenas hay que ejecutar el comando:
+
+```bash
+>> ./start_app.sh
+```
+* La aplicación es añadida el arranque del sistema para garantir que empieza automáticamente en caso de una falla energética
+
+
+#### Como utilizar plataforma "Desktop" [apenas para testar]:
 
 Una vez instalado todo, entramos en la carpeta `contador` y abrimos una ventana de terminal. Y hacemos el siguiente:
 
