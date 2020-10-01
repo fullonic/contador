@@ -1,9 +1,14 @@
 #!/bin/bash
 echo "Actualizando sistema..."
 sudo apt update && sudo apt install
+
+echo "Instalando SQLite3"
+sudo apt-get install sqlite3
+
 echo "Instalando Firefox"
 sudo apt install firefox-esr
 
+echo "Instalando geckodriver"
 driver=geckodriver-v0.23.0-arm7hf.tar.gz
 if [ -f $driver ] ; then
     echo ""
@@ -12,11 +17,11 @@ else
     wget https://github.com/mozilla/geckodriver/releases/download/v0.23.0/geckodriver-v0.23.0-arm7hf.tar.gz
 
 fi
-echo "Instalando geckodriver"
 tar -xf $driver
 sudo chmod +x ./geckodriver
 sudo mv ./geckodriver /usr/local/bin/
 rm $driver
+
 # Create start up bash script
 base_dir=$(pwd)
 echo "#!/bin/bash" > start_app.sh
@@ -29,7 +34,7 @@ sudo chmod +x ./start_app.sh
 crontab -l > cron_task
 #echo new cron into cron file
 echo " Add cron task @reboot $basedir/start_app.sh"
-echo "@reboot $basedir/start_app.sh" >> cron_task
+echo "@reboot $base_dir/start_app.sh" >> cron_task
 #install new cron file
 crontab cron_task
 rm cron_task

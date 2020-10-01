@@ -107,7 +107,7 @@
 
 <script>
     function getHistoricStats(dni) {
-        let url = "http://localhost:5001/historic_stats/" + dni;
+        let url = "http://{{root_url}}/historic_stats/" + dni;
         console.log(url);
         fetch(url)
             .then(response => response.json())
@@ -138,7 +138,7 @@
         document.getElementById("spinner-back").classList.add("d-none");
     }
 
-    fetch('http://localhost:5001/get_all_users')
+    fetch('http://{{root_url}}/get_all_users')
         .then(response => response.json())
         .then(data => data["users"].forEach(addRow));
     var body = "";
@@ -165,7 +165,7 @@
         document.getElementById("spinner-front").classList.remove("d-none")
         document.getElementById("spinner-back").classList.remove("d-none")
 
-        let url = "http://localhost:5001/get_plot/" + dni;
+        let url = "http://{{root_url}}/get_plot/" + dni;
         console.log(url);
         getHistoricStats(dni);
         fetch(url)
@@ -177,7 +177,7 @@
         document.getElementById("spinner-front").classList.remove("d-none")
         document.getElementById("spinner-back").classList.remove("d-none")
 
-        let url = "http://localhost:5001/export_csv/" + dni;
+        let url = "http://{{root_url}}/export_csv/" + dni;
         console.log(url);
         fetch(url)
             .then(response => response.text())

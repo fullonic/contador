@@ -2,14 +2,16 @@ import csv
 import datetime
 import json
 import logging
+import socket
 import tempfile
+from io import StringIO
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from io import StringIO
 
 from apscheduler.jobstores.base import ConflictingIdError  # type: ignore
-from apscheduler.schedulers import SchedulerAlreadyRunningError  # type: ignore
 from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
+from apscheduler.schedulers import SchedulerAlreadyRunningError  # type: ignore
+
 from flask import (
     Flask,
     flash,
@@ -30,6 +32,10 @@ app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 app.config["SECRET_KEY"] = "only_for_local_networks"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+# Get server machine IP.
+app.config["MACHINE_IP"] = socket.gethostbyname(socket.gethostname())
+app.config["DEBUG_MODE"] = True
+app.config["PORT"] = 5001
 
 log = logging.getLogger("werkzeug")
 log.disabled = True
@@ -141,7 +147,8 @@ def home():
 
 @app.route("/users_list")
 def users_list():
-    return render_template("users_list.html")
+    root_url = f'{app.config["MACHINE_IP"]}:{app.config["PORT"]}'
+    return render_template("users_list.html", root_url=root_url)
 
 
 @app.route("/add_user", methods=["GET", "POST"])
@@ -285,7 +292,7 @@ from ui.models import (
     update_user,
 )  # noqa isort:skip
 
-db.create_all()
+print(f' App URL: {app.config["MACHINE_IP"]}:{app.config["PORT"]}')
 
 if __name__ == "__main__":
     app.run(debug=True)
