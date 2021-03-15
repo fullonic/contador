@@ -3,7 +3,7 @@
 """
 import datetime
 from itertools import groupby
-from typing import List, NamedTuple, Iterator, Dict
+from typing import List, NamedTuple, Dict
 from dataclasses import dataclass, field
 import itertools
 import sqlite3
@@ -12,7 +12,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy import extract, and_, or_
 
 from ui.app import db
-from scrapper.contador import singleReadData
+from scrapper.contador import SingleReadData
 
 
 class User(db.Model):
@@ -168,7 +168,7 @@ class Read(db.Model):
 
 
 # @dataclass
-# class singleReadData:
+# class SingleReadData:
 #     """TODO: Implement Results to have this format."""
 
 #     date: datetime.datetime
@@ -300,7 +300,7 @@ def db_add_user(dni, password, name):
         raise Exception(f"Ya existe una cuenta con el DNI/NIE [{dni}] ")
 
 
-def add_reads(results: Dict[str, singleReadData]):
+def add_reads(results: Dict[str, SingleReadData]):
     """Add new read to db."""
 
     dni, data = list(results.items())[0]

@@ -21,7 +21,7 @@ from ui.models import (
     WeekStats,
     is_weekend,
 )
-from scrapper.contador import singleReadData
+from scrapper.contador import SingleReadData
 
 
 @pytest.fixture(scope="module")
@@ -208,7 +208,7 @@ def test_add_results_into_db():
         (
             False,
             {
-                "47635719M": singleReadData(
+                "47635719M": SingleReadData(
                     date=datetime.datetime(2020, 8, 6, 19, 44, 47, 702887),
                     power=None,
                     percent=None,
@@ -219,7 +219,7 @@ def test_add_results_into_db():
         (
             True,
             {
-                "47635719M": singleReadData(
+                "47635719M": SingleReadData(
                     date=datetime.datetime(2020, 8, 6, 19, 44, 47, 702887),
                     power=2,
                     percent=2,

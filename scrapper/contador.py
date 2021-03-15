@@ -2,19 +2,18 @@
 
 import datetime
 import json
-import os
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from collections import defaultdict
-from typing import Dict, List, Tuple, NamedTuple
+from typing import Dict, Tuple
 import logging
 from dataclasses import dataclass
 import random
 
 import bs4  # type: ignore
 
-# from fake_useragent import UserAgent  # type: ignore
+
 from selenium import webdriver  # type: ignore
 from selenium.common.exceptions import (  # type: ignore
     ElementClickInterceptedException,
@@ -27,7 +26,7 @@ base_path = Path(__file__).parent
 
 
 @dataclass
-class singleReadData:
+class SingleReadData:
     """TODO: Implement Results to have this format."""
 
     date: datetime.datetime
@@ -184,7 +183,7 @@ class ReadConsumption:
         info_log.info(f"[{self.username}] Area Contador Online")
         self.driver.find_element_by_name("ActionReconectar").click()
 
-    def get_actual_consume(self, page: str) -> Tuple[bool, Dict[str, singleReadData]]:
+    def get_actual_consume(self, page: str) -> Tuple[bool, Dict[str, SingleReadData]]:
         """Extract values from page source after getting readings values."""
         date = datetime.datetime.now()
         try:
@@ -195,7 +194,7 @@ class ReadConsumption:
 
             return (
                 True,
-                {self.username: singleReadData(date, actual_read, percent, max_power)},
+                {self.username: SingleReadData(date, actual_read, percent, max_power)},
                 # {self.username: (date, actual_read, percent, max_power)},
             )
         except IndexError:
@@ -203,7 +202,7 @@ class ReadConsumption:
             # TODO: reschedule task
             return (
                 False,
-                {self.username: singleReadData(date, None, None, None)},
+                {self.username: SingleReadData(date, None, None, None)},
             )
 
     def wait_to_be_clickable(self, selector):
